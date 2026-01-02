@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+	{% load django_browser_reload %}
+
 <html>
 <head>
 	<meta charset="utf-8">
@@ -6,11 +8,28 @@
 	<title>Trackshop</title>
 </head>
 <body>
+	{% if debug %}
+		{% django_browser_reload_script %}
+	{% endif %}
+
+	<nav>
+		<ul>
+			<li><a href="">Accueil</a></li>
+			<li><a href="">Stock</a></li>
+			<li><a href="">Client</a></li>
+			<li><a href="">Vente</a></li>
+			<li><a href="">Livre</a></li>
+			<li><a href="">Dette</a></li>
+			<li><a href="">Notification</a></li>
+			<li><a href="">Paramètre</a></li>
+		</ul>
+	</nav>
 	<main>
 		{% block content %}
-			<p>Bienvenue sur trackshop</p>
-			<p>Gardé à vue toutes vos transactions et n'importe où sur terre</p>
+			<h1>Bienvenue sur TrackShop</h1>
+			<p>Rester organiser et garder à vue toutes vos transactions</p>
 		{% endblock %}
+
 	</main>
 </body>
 <footer>
