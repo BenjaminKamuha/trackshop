@@ -13,6 +13,7 @@ class Stock(models.Model):
 	dateDebut = models.DateTimeField(auto_now=True)
 	dateFin = models.DateTimeField(null=True, blank=True)
 	last_access_date = models.DateTimeField(auto_now=True)
+	last_access_product_id = models.IntegerField(null=True, blank=True)
 
 	def __str__(self):
 		return self.stockName

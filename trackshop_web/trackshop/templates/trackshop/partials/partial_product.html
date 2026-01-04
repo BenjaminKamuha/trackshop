@@ -1,8 +1,7 @@
-
 <h3>Stock/{{ stock }}</h3>
 {% if stock.products.all %}
-    {% for product in stock.products.all %}   
-        <p>{{ product }} </p>
+    {% for prod in stock.products.all %}   
+        <p><a href="" hx-get="{% url 'TrackShop:product_details' prod.pk %}" hx-target="#product_details" hx-trigger="click" hx-swap="innerHTML">{{ prod }}</a></p>
     {% endfor %}
     <a href="{% url 'TrackShop:new_product' stock.pk %}">Nouveau produit</a>
 {% else %}
@@ -13,3 +12,6 @@
         <p>Vous n'avez pas encore des stock<br>Cliquer sur 'Nouveau stock' pour <br>Créer un stock</p>
     {% endif %}
 {% endif %}
+    {% if product %}
+        <span href="" hx-get="{% url 'TrackShop:product_details' product.pk %}" hx-target="#product_details" hx-trigger="load" hx-swap="innerHTML"></span>
+    {% endif %}

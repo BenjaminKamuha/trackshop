@@ -27,7 +27,7 @@ def dashboard(request):
 	todaySpending = Spending.objects.filter(date=today)
 	
 	return render(request, "trackshop/dashboard.html", context={
-		"stocks": stocks, 
+		"stocks": stocks,
 		"clients": clients,
 		"debts": debts,
 		"todaySales": todaySales,
@@ -75,6 +75,13 @@ def load_stock_product(request, stock_pk):
 	stock.last_access_date = timezone.now()
 	stock.save()
 	products = Product.objects.filter(stock=stock_pk)
+	try:
+		product = Product.objects.get(pk=stock.last_access_product_id)
+		print(product)
+		return render(request, "trackshop/partials/partial_product.html", context={"products": products, "product": product, "stock": stock})
+
+	except:
+		pass
 	
 	return render(request, "trackshop/partials/partial_product.html", context={"products": products, "stock": stock})
 
@@ -89,10 +96,17 @@ def new_product(request, stock_pk):
 			return redirect("TrackShop:stock")
 		else:
 			return render(request, "trackshop/new_product.html", context={"product_form": product_form, "stock": stock})
-	
+			
 	product_form = ProductForm()
 	return render(request, "trackshop/new_product.html", context={"product_form": product_form, "stock": stock})
-	
+
+def product_detail(request, product_pk):
+	product = get_object_or_404(Product, pk=product_pk)
+	stock = product.stock 
+	stock.last_access_product_id = product_pk
+	stock.save()
+	return render(request, "trackshop/partials/partial_product_detail.html", context={"product": product})
+
 
 def sale(request):
 	return render(request, "trackshop/sale.html")
@@ -106,5 +120,3 @@ def setting(request):
 
 def debt(request):
 	return render(request, "trackshop/debt.html", context={})
-
-

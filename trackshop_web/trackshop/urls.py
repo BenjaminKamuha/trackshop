@@ -12,6 +12,7 @@ urlpatterns = [
 	path('stock/', views.stock, name="stock"),
 	path('stock/load_product/<int:stock_pk>', views.load_stock_product, name="load_stock_product"),
 	path('stock/new_product/<int:stock_pk>', views.new_product, name="new_product"),
+	path('stock/product/details/<int:product_pk>', views.product_detail, name="product_details"),
 	path('sale/', views.sale, name="sale"),
 	path('cash_book/', views.cash_book, name="cash_book"),
 	path('debt/', views.debt, name="debt"),
