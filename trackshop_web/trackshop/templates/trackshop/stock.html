@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block sub_menu %}
+    <div id="products" style="border: 2px solid green;">
+        {% include 'trackshop/partials/partial_product.html' %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div id="header" style="display: flex;">
+        <!-- All Stocks -->
+        <div id="stocks" style="border: 2px solid yellow; width: 50%;">
+            {% if stocks %}
+                <div style="display: flex;">
+                    {% for stock in stocks %}
+                        <a href="" hx-get="{% url 'TrackShop:load_stock_product' stock.pk %}" hx-target="#products" hx-trigger="click" hx-swap="innerHTML"><div id="stock" style="border: 2px solid black;">{{ stock }}</div></a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Vous n'avez pas encore des stock</p>
+            {% endif %}
+            <a href="{% url 'TrackShop:new_stock' %}"><button type="">Nouveau stock</button></a>
+        </div>
+        <!-- Chart stock -->
+        <div id="Chart" style="border: 2px solid blue; width: 50%;">
+        </div>
+    </div>
+    <div id="product_details">
+    </div>
+{% endblock %}

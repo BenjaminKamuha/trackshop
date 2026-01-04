@@ -1,0 +1,18 @@
+Formulaires
+
+
+
+---> Taux
+
+---> Account
+
+---> Login
+
+---> Ajout stock
+
+---> New Product
+
+---> ClientForm
+
+---> Sale
+

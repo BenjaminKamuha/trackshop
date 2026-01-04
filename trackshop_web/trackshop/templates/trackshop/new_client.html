@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div>
+        <form action="{% url 'TrackShop:new_client' %}" method="POST">
+            {% csrf_token %}
+            {{ client_form }}
+            <button>Ajouter</button>
+        </form>
+    </div>
+{% endblock %}

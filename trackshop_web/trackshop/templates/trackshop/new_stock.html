@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div>
+    <p>Nouveau stock</p>
+
+    <form action="{% url 'TrackShop:new_stock'%}" method="post">
+        {% csrf_token %}  
+        {{ stock_form.as_p }}
+
+        <button type="submit">Ajouter le stock</button>
+    </form>
+</div>
+        
+{% endblock %}

@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-t%i%z#q62(gq)39rlwh2z3=_8e8axsa$ve-h*6@q)ktdm7^^%^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost","192.168.183.210"]
+ALLOWED_HOSTS = ["localhost","192.168.183.210", "192.168.183.121"]
 
 # Application definition
 
@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_htmx',
     'django_browser_reload',
     'trackshop',
 ]
@@ -47,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 

@@ -1,7 +1,39 @@
 {% extends 'base.html' %}
 
-{% block content %}
-    <div >
 
+{% block sub_menu %}
+    <h1>Dashboard</h1>
+{% endblock %}
+
+{% block content %}
+    <div id="dashboard" style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+        <div id="stock" style="border: 2px solid rgb(0, 247, 255);text-align: center; width: 10%; padding: 0 0 15px 0;">
+            <h3>Stock</h3>
+            <h2>{{ stocks.count }}</h2>
+            <a href="{% url 'TrackShop:new_stock' %}"><button type="">Ajouter</button></a>
+        </div>
+
+        <div id="client" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
+            <h3>Clients</h3>
+            <h2>{{ clients.count }}</h2>
+            <a href="{% url 'TrackShop:new_client' %}"><button>Ajouter</button></a>
+        </div>
+
+        <div id="spending" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
+            <h3 >Dépenses</h3>
+            <h2>{{ todaySpending.count }}</h2>
+            <p>Aujourd'hui</p>
+        </div>
+        
+        <div id="debt" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
+            <h3 >Dettes</h3>
+            <h2>{{ debts.count }}</h2>
+        </div>
+
+        <div id="sale" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
+            <h3 >Vente</h3>
+            <h2>{{ todaySales.count }}</h2>
+            <p>Aujourd'hui</p>
+        </div>
     </div>
 {% endblock %}
