@@ -1,0 +1,15 @@
+
+{% if client %}
+    <h3>Client/{{ client }}</h3>
+    <a href="" hx-get="{% url 'TrackShop:client_general_info' client.pk %}" hx-target="#content" hx-trigger="load" hx-swap="innerHTML"></a>
+
+    <ul>
+         <li><a href="" hx-get="{% url 'TrackShop:client_general_info' client.pk %}" hx-target="#content" hx-trigger="click" hx-swap="innerHTML">Information de base</a></li>
+        <li><a href="" hx-get="{% url 'TrackShop:sales_history' client.pk %}" hx-target="#content" hx-trigger="click" hx-swap="innerHTML">Historique achat</a></li>
+        <li><a href="" hx-get="{% url 'TrackShop:client_commercial_info' client.pk %}" hx-target="#content" hx-trigger="click" hx-swap="innerHTML">Commerciales</a></li>
+        <li><a href="" hx-get="{% url 'TrackShop:client_statistics' client.pk %}" hx-target="#content" hx-trigger="click" hx-swap="innerHTML">Statistiques</a></li>
+        <!-- <li><a href="" hx-get="{% url 'TrackShop:client_sales_info' client.pk %}" hx-target="#content" hx-trigger="click" hx-swap="innerHTML">Achats</a></li>-->
+        <li><a href="" hx-get="{% url 'TrackShop:client_financial_info' client.pk %}" hx-target="#content" hx-trigger="click" hx-swap="innerHTML">Financières</a></li>
+        <li><a href="" hx-get="{% url 'TrackShop:fallow_client' client.pk %}" hx-target="#content" hx-trigger="click" hx-swap="innerHTML">Notes et suivi</a></li>
+    </ul>    
+{% endif %}

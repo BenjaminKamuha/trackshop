@@ -10,13 +10,13 @@
         <div id="stock" style="border: 2px solid rgb(0, 247, 255);text-align: center; width: 10%; padding: 0 0 15px 0;">
             <h3>Stock</h3>
             <h2>{{ stocks.count }}</h2>
-            <a href="{% url 'TrackShop:new_stock' %}"><button type="">Ajouter</button></a>
+            <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=dashboard" hx-trigger="click" hx-target="#form">Ajouter</button></a>
         </div>
 
         <div id="client" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
             <h3>Clients</h3>
             <h2>{{ clients.count }}</h2>
-            <a href="{% url 'TrackShop:new_client' %}"><button>Ajouter</button></a>
+            <a href="" hx-get="{% url 'TrackShop:new_client' %}?from=dashboard" hx-trigger="click" hx-target="#form"><button>Ajouter</button></a>
         </div>
 
         <div id="spending" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
@@ -36,4 +36,8 @@
             <p>Aujourd'hui</p>
         </div>
     </div>
+
+    
+    {% block form %}
+    {% endblock %}
 {% endblock %}

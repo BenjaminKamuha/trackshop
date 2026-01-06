@@ -1,12 +1,27 @@
 from django.db import models
 
-class Client(models.Model):
-	name = models.CharField(max_length=20, null=True, blank=True, verbose_name="Nom")
-	lastName = models.CharField(max_length=20, null=True, blank=True, verbose_name="Post nom")
-	phoneNumber = models.CharField(max_length=15, null=True, blank=True, verbose_name="Numéro de téléphone")
 
+CLIENT_TYPE_CHOICE = [
+	("Particulier", "particulier"),
+	("Grossiste", "Grossiste"),
+	("Revendeur", "Revendeur"),
+	("Entreprise", "Entreprise"),
+]
+
+CLIENT_CATEGORY = [
+	("Client regulier", "client regulier"),
+	("client VIP", "Client vIP"),
+	("client occasionnel", "client occasionnel"),
+
+]
+class Client(models.Model):
+	complete_name = models.CharField(max_length=20, null=True, blank=True, verbose_name="Nom complet")
+	phoneNumber = models.CharField(max_length=15, null=True, blank=True, verbose_name="Numéro de téléphone")
+	email = models.CharField(max_length=20, null=True, blank=True)
+	adresse = models.CharField(max_length=50, null=True, blank=True)
+	client_type = models.CharField(max_length=20, null=True, blank=True, choices=CLIENT_TYPE_CHOICE)
 	def __str__(self):
-		return f'{self.name} {lastName}'
+		return f'{self.complete_name}'
 
 class Stock(models.Model):
 	stockName = models.CharField(max_length=20, verbose_name="Nom du stock")
@@ -18,13 +33,19 @@ class Stock(models.Model):
 	def __str__(self):
 		return self.stockName
 
+CURRENCY_CHOICES = [
+	("USD", "DOLLARS"),
+	("CDF", "FRANC")
+]
+
 class Product(models.Model):
 	stock = models.ForeignKey(Stock, verbose_name="Stock", related_name="products", on_delete=models.CASCADE)
 	name = models.CharField(max_length=20)
 	price = models.FloatField(verbose_name="Prix Produit")
+	currency = models.CharField(max_length=5, verbose_name="Dévise", choices=CURRENCY_CHOICES, null=True, blank=True)
 	quantity = models.IntegerField()
 	dateAdded = models.DateTimeField(auto_now=True)
-
+	
 	def __str__(self):
 		return self.name
 
@@ -35,11 +56,11 @@ class CashBook(models.Model):
 	date = models.DateField(verbose_name="date")
 
 class Sale(models.Model):
-	product = models.ForeignKey(Product, verbose_name="Produit", on_delete=models.CASCADE)
+	product = models.ForeignKey(Product, verbose_name="Produit", related_name="sales", on_delete=models.CASCADE)
 	client = models.ForeignKey(Client, verbose_name="Client", on_delete=models.CASCADE)
 	quantity = models.IntegerField(verbose_name="Quantité")
 	payedAmount = models.FloatField(verbose_name="Montant payé")
-	date = models.DateField(verbose_name="Date livre")
+	sale_date = models.DateField(verbose_name="Date livre")
 	reduction = models.FloatField(verbose_name="Montant reduction")
 
 class Invoice(models.Model):

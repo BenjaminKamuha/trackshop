@@ -1,6 +1,3 @@
-{% extends 'base.html' %}
-
-{% block content %}
 
 <div>
     <p>Nouveau stock</p>
@@ -9,8 +6,7 @@
         {% csrf_token %}  
         {{ stock_form.as_p }}
 
-        <button type="submit">Ajouter le stock</button>
+        <button type="submit" name="from" value="{{ source }}">Ajouter le stock</button>
     </form>
 </div>
         
-{% endblock %}

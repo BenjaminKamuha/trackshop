@@ -7,7 +7,7 @@
 {% else %}
     {% if stock %}
         <p>Aucun produit trouvé pour {{ stock }}</p>
-        <a href="{% url 'TrackShop:new_product' stock.pk %}">Nouveau produit</a>
+        <a href="" hx-get="{% url 'TrackShop:new_product' stock.pk %}" hx-target="#form" hx-trigger="click" hx-swap="innerHTML">Nouveau produit</a>
     {% else %}
         <p>Vous n'avez pas encore des stock<br>Cliquer sur 'Nouveau stock' pour <br>Créer un stock</p>
     {% endif %}

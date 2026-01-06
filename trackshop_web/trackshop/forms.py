@@ -18,13 +18,13 @@ class StockForm(forms.ModelForm):
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client 
-        fields = ["name", "lastName", "phoneNumber"]
+        fields = ["complete_name", "email", "phoneNumber"]
 
     def clean(self):
         cleaned_data = super().clean()
-        name = cleaned_data.get("name")
-        lastName = cleaned_data.get("LastName")
+        complete_name = cleaned_data.get("complete_name")
         phoneNumber = cleaned_data.get("phoneNumber")
+        email = cleaned_data.get("email")
 
 class ProductForm(forms.ModelForm):
     class Meta:

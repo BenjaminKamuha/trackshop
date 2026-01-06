@@ -1,0 +1,6 @@
+<h3>Informations de base pour {{ client }}</h3>
+
+<p>Nom complet: {{ client.complete_name }}</p>
+<p>Téléphone: {% if client.phoneNumber %}{{ client.phoneNumber }} {% else %} [Non défini] {% endif %}</p>
+<p>Email: {% if client.email %}{{ client.email }} {% else %} [Non défini] {% endif %}</p>
+<p>Adresse: {% if client.adresse %}{{ client.adresse }} {% else %} [Non défini] {% endif %}</p>

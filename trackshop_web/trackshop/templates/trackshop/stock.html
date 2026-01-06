@@ -2,7 +2,7 @@
 
 {% block sub_menu %}
     <div id="products" style="border: 2px solid green;">
-        {% include 'trackshop/partials/partial_product.html' %}
+        {% include 'trackshop/partials/product/partial_product.html' %}
     </div>
 {% endblock %}
 
@@ -19,13 +19,13 @@
             {% else %}
                 <p>Vous n'avez pas encore des stock</p>
             {% endif %}
-            <a href="{% url 'TrackShop:new_stock' %}"><button type="">Nouveau stock</button></a>
+            <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form" hx-trigger="click" hx-swap="innerHTML">Nouveau stock</button></a>
         </div>
         <!-- Chart stock -->
         <div id="Chart" style="border: 2px solid blue; width: 50%;">
         </div>
     </div>
-    <div id="product_details">
-        {% include "trackshop/partials/partial_product_detail.html" %}
+    <div id="product_details" style="border: 2px solid orange; display: flex;">
+        {% include "trackshop/partials/product/partial_product_detail.html" %}
     </div>
 {% endblock %}

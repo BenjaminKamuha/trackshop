@@ -31,16 +31,20 @@
 	
 	<main style="display: flex;">
 		
-			<div style="width: 150px;">
+			<div style="width: 200px;">
 				{% block sub_menu %}
 				{% endblock %}
 			</div>
-
-
 		<div style="width: 100%; padding: 0 15px 0 15px">
 			{% block content %}
 			{% endblock %}	
 		</div>
+
+		<div id="form" style="border: 1px solid violet; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+		{% block form %}
+		{% endblock %}
+		</div>
+		
 	</main>
 </body>
 <footer>
