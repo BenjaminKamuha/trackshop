@@ -1,0 +1,26 @@
+<div class="product-row">
+    <!-- Recherche -->
+    <div>
+        <input type="text"
+               placeholder="Rechercher un produit..."
+               hx-get="{% url 'TrackShop:search-product' %}"
+               hx-trigger="keyup changed delay:300ms"
+               hx-target=".results"
+               hx-include="closest .product-row">
+
+        <input type="hidden" name="product_id[]">
+
+        <div class="results"></div>
+    </div>
+
+    <!-- Quantité -->
+    <input type="number" name="quantity[]" value="1" min="1">
+
+    <!-- Supprimer -->
+    <button type="button"
+            hx-get="about:blank"
+            hx-target="closest .product-row"
+            hx-swap="outerHTML">
+        ❌
+    </button>
+</div>

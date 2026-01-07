@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+
+{% block sub_menu %}
+    <h1>Vente</h1>
+{% endblock %}
+
+{% block content %}
+    <form
+        hx-post="{% url 'TrackShop:sale-save' %}"
+        hx-target="#sale-result"
+        hx-swap="innerHtml">
+
+        {% csrf_token %}
+        <!-- Client -->
+        <div style="display: flex; flex-direction: row; border-bottom: 2px solid blue; margin: 40px 0 0 40px">
+            <div class="autocomplete">
+                <input style=""
+                        type="text"
+                        name="client_search"
+                        placeholder="Rechercher un client..."
+                        hx-get="{% url 'TrackShop:search-client' %}"
+                        hx-trigger="keyup changed"
+                        hx-target="#client_results"
+                        hx-indicator=".loading">
+            </div>
+
+            <div id="client_results" style="margin-bottom: 30px;">
+                 <div style="display: flex;">
+                    {% for c in clients %}
+                        <div style="border: solid blue 1px; margin-left: 15px;" class="box" hx-on:click="
+                                document.querySelector('[name=client_search]').value='{{ c.complete_name }}';
+                                document.querySelector('[name=client_id]').value='{{ c.id }}'; 
+                                this.parentElement.innerHtml='';
+                                ">
+                                {{ c.complete_name }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="client_id">
+
+
+        <!-- Produits -->
+        <input type="hidden" name="client_id">
+
+        <div id="sale-items"></div>
+
+
+        <button
+            id="add-product-btn"
+            type="button" 
+            hx-get="{% url 'TrackShop:sale-add-row' %}"
+            hx-target="#sale-items"
+            hx-swap="beforeend"
+            hx-include="[name='product_id[]']">
+            + Ajouter produit
+        </button>
+
+        <button type="submit" onclick="submitSale()">Valider la vente</button>
+    </form>
+
+    <div id="sale-result"></div>
+
+{% endblock %}

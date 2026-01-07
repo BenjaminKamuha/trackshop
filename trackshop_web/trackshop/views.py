@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.db import transaction
+from django.db.models import Sum
 from .forms import StockForm, ProductForm, ClientForm
 from .models import (
 	Stock, 
@@ -10,8 +12,27 @@ from .models import (
 	Spending, 
 	Sale,
 	Product,
+	SaleItem,
 	)
-from django.db.models import Sum 
+
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from decimal import Decimal
+
+@transaction.atomic
+def add_payment(sale, amount, method):
+	Payment.objects.create(
+		sale=sale,
+		amount=amount,
+		payment_method=method
+	)
+	total_paid = sale.payments.aggregate(
+		total=Sum('amount'))['total'] or 0
+	
+	sale.paid_amount = total_paid
+	sale.is_credit = total_paid < sale.total_amount
+	sale.save()
+
 
 now = timezone.now()
 
@@ -25,7 +46,7 @@ def dashboard(request):
 	stocks = Stock.objects.all()
 	clients = Client.objects.all()
 	debts = ClientDebt.objects.all()
-	todaySales = Sale.objects.filter(sale_date=today)
+	todaySales = Sale.objects.filter(created_at=today)
 	todaySpending = Spending.objects.filter(date=today)
 	
 	return render(request, "trackshop/dashboard.html", context={
@@ -95,6 +116,7 @@ def client_general_info(request, client_pk):
 	})
 
 
+
 def client_commercial_info(request, client_pk):
 
 	return render(request, "trackshop/partials/client/commercial_info.html", context={})
@@ -102,10 +124,11 @@ def client_commercial_info(request, client_pk):
 def sales_history(request, client_pk):
 	client = get_object_or_404(Client, pk=client_pk)
 	client_sales = Sale.objects.filter(client=client)
-	revenue = Sale.objects.filter(client=client).aggregate(total=Sum('payedAmount'))['total'] or 0
-	top_product = (Sale.objects.filter(client=client).values('product__id', 'product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity').first())
+	revenue = 0
+	# Calcule du chiffre d'affaire du client
+	total_revenu = Sale.objects.filter(client=client).aggregate(total=Sum('total_price'))['total'] or 0
 		
-	return render(request, "trackshop/partials/client/sales_history.html", context={"client_sales": client_sales, "client":client, "revenue": revenue, "top_product": top_product})
+	return render(request, "trackshop/partials/client/sales_history.html", context={"client_sales": client_sales, "client":client})
 
 def client_sales_info(request, client_pk):
 
@@ -162,15 +185,12 @@ def new_product(request, stock_pk):
 
 def product_detail(request, product_pk):
 	product = get_object_or_404(Product, pk=product_pk)
-	evaliable_quantity = product.quantity - product.sales.count()
-	sales_this_month = Sale.objects.filter(
+	evaliable_quantity = product.quantity - product.items.count()
+	sales_this_month = SaleItem.objects.filter(
 		product=product,
-		sale_date__year= now.year,
-		sale_date__month=now.month
 	).count()
 
 	total_revenue = product.quantity * product.price 
-	sales_revenue = product.sales.count() * product.price
 	stock = product.stock 
 	stock.last_access_product_id = product_pk
 	stock.save()
@@ -178,13 +198,13 @@ def product_detail(request, product_pk):
 		"product": product, 
 		"sales_this_month": sales_this_month,
 		"evaliable_quantity": evaliable_quantity,
-		"sales_revenue": sales_revenue,
 		"total_revenue": total_revenue,
 		})
 
 
 def sale(request):
-	return render(request, "trackshop/sale.html")
+		
+	return render(request, "trackshop/sale.html", context={})
 
 
 def cash_book(request):
@@ -195,3 +215,105 @@ def setting(request):
 
 def debt(request):
 	return render(request, "trackshop/debt.html", context={})
+
+
+def add_payment_view(request, sale_id):
+	sale = get_object_or_404(Sale, pk=sale_id)
+
+	amount = Decimal(request.POST['amount'])
+	method = request.POST['payement_method']
+
+	add_payment(sale, amount, method)
+
+	return render(request, "partials/sale/sale_summary.html", {"sale": sale})
+
+
+def sale_invoice(request, sale_id):
+	sale = Sale.objects.get(pk=sale_id)
+	return render(request, "trackshop/sale_invoice.html", {"sale": sale})
+
+
+def sale_invoice_pdf(request, sale_id):
+	sale = get_object_or_404(Sale, pk=sale_id)
+	html_string = render_to_string(
+		"trackshop/sale_invoice.html",
+		{"sale": sale}
+	)
+
+	pdf = HTML(string=html_string).write_pdf()
+	response = HttpResponse(pdf, content_type='application/pdf')
+	response['Content-Disposition'] = f'inline; filename="facture_{sale.id}.pdf"'
+	return response
+
+def sale_create(request):
+	return render(request, "trackshop/sale_form.html", {
+		"clients": Client.objects.all(),
+		"products": Product.objects.all(),
+	})
+
+def sale_add_row(request):
+	selected_ids = request.GET.getlist('selected_ids[]')
+	products = Product.objects.exclude(id__in=selected_ids)
+
+	return render(request, "trackshop/partials/sale/sale_row.html", {
+		"products": products
+	})
+
+@transaction.atomic
+def sale_save(request):
+	product_ids = request.POST.getlist("product_id[]")
+
+	if len(product_ids) != len(set(product_ids)):
+		return HttpResponseBadRequest("Produit dupliqué")
+
+	client_id = request.POST.get("client_id")
+	quantities = request.POST.getlist("quantity[]")
+
+	client = Client.objects.get(id=client_id)
+	print(client)
+
+	sale = Sale.objects.create(
+		client=client,
+		total_amount=0
+	)
+
+	total = Decimal("0")
+	for product_id, qty in zip(product_ids, quantities):
+		product = Product.objects.get(id=product_id)
+		qty = int(qty)
+
+		line_total = product.price * qty 
+		SaleItem.objects.create(
+			sale=sale,
+			product=product,
+			quantity=qty,
+			unit_price=product.price,
+			total_price=line_total
+		)
+
+		product.quantity -= qty
+		product.save()
+
+		total += line_total 
+
+	
+	sale.total_amount = total 
+	sale.save()
+
+	return redirect("TrackShop:sale-invoice", sale_id=sale.id)
+
+
+
+def search_client(request):
+	search_input = request.GET.get('client_search', '')
+	clients = Client.objects.filter(complete_name__icontains=search_input)[:10]
+
+	return render(request, 'trackshop/partials/sale/client_result.html', {
+		'clients': clients
+	})
+
+def search_product(request):
+	search_input = request.GET.get('product_search', '')
+	products = Product.objects.filter(name__icontains=search_input)[:10]
+
+	return render(request, 'trackshop/partials/sale/product_result.html', { 'products': products})

@@ -21,8 +21,17 @@ urlpatterns = [
 	path('stock/load_product/<int:stock_pk>', views.load_stock_product, name="load_stock_product"),
 	path('stock/new_product/<int:stock_pk>', views.new_product, name="new_product"),
 	path('stock/product/details/<int:product_pk>', views.product_detail, name="product_details"),
-	path('sale/', views.sale, name="sale"),
 	path('cash_book/', views.cash_book, name="cash_book"),
 	path('debt/', views.debt, name="debt"),
 	path('setting/', views.setting, name='setting'),
+	
+	path('sale/new/', views.sale_create, name='sale-create'),
+	path('sale/save/', views.sale_save, name='sale-save'),
+	path('sale/add-row/', views.sale_add_row, name='sale-add-row'),
+	path('sale/<int:sale_id>/invoice/', views.sale_invoice, name='sale-invoice'),
+	path('sale/<int:sale_id>/invoice/pdf/', views.sale_invoice_pdf, name="sale-invoice-pdf"),
+	path('sale/search_client/', views.search_client, name="search-client"),
+	path('sale/search_product/', views.search_product, name="search-product"),
 ]
+
+

@@ -1,5 +1,6 @@
 {% load static django_htmx django_browser_reload %}
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,6 +8,24 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Trackshop</title>
 	{% htmx_script %}
+	<script src="{% static 'trackshop/sale.js' %}" defer></script>
+	<style>
+		.hidden {
+			display: none;
+		}
+		.total-box { margin-top: 15px; }
+		table { border-collapse: collapse; width: 100%; }
+		th, td {border: 1px solid #333; padding: 6px; }
+
+		ul{
+			list-style-type: none;
+		}
+
+		.box{
+			cursor: pointer;
+		}
+	</style>
+	
 </head>
 <body>
 	<p>Extended by 'base.html'</p>
@@ -20,7 +39,7 @@
 						<a href="{% url 'TrackShop:dashboard' %}">Dashboard</a>
 						<a href="{% url 'TrackShop:stock' %}">Stock</a>
 						<a href="{% url 'TrackShop:client' %}">Clients</a>
-						<a href="{% url 'TrackShop:sale' %}">Vente</a>
+						<a href="{% url 'TrackShop:sale-create' %}">Vente</a>
 						<a href="{% url 'TrackShop:cash_book' %}">Livre de caisse</a>
 						<a href="{% url 'TrackShop:debt' %}">Dettes</a>
 						<a href="{% url 'TrackShop:setting' %}">Paramères</a>
@@ -44,7 +63,6 @@
 		{% block form %}
 		{% endblock %}
 		</div>
-		
 	</main>
 </body>
 <footer>

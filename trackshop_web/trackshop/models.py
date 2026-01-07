@@ -41,7 +41,7 @@ CURRENCY_CHOICES = [
 class Product(models.Model):
 	stock = models.ForeignKey(Stock, verbose_name="Stock", related_name="products", on_delete=models.CASCADE)
 	name = models.CharField(max_length=20)
-	price = models.FloatField(verbose_name="Prix Produit")
+	price = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Prix Produit")
 	currency = models.CharField(max_length=5, verbose_name="Dévise", choices=CURRENCY_CHOICES, null=True, blank=True)
 	quantity = models.IntegerField()
 	dateAdded = models.DateTimeField(auto_now=True)
@@ -50,25 +50,55 @@ class Product(models.Model):
 		return self.name
 
 class CashBook(models.Model):
-	income = models.FloatField(verbose_name="recette")
-	spending = models.FloatField(verbose_name="depense")
-	solde = models.FloatField(verbose_name="solde")
+	income = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="recette")
+	spending = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="depense")
+	solde = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="solde")
 	date = models.DateField(verbose_name="date")
 
 class Sale(models.Model):
-	product = models.ForeignKey(Product, verbose_name="Produit", related_name="sales", on_delete=models.CASCADE)
-	client = models.ForeignKey(Client, verbose_name="Client", on_delete=models.CASCADE)
-	quantity = models.IntegerField(verbose_name="Quantité")
-	payedAmount = models.FloatField(verbose_name="Montant payé")
-	sale_date = models.DateField(verbose_name="Date livre")
-	reduction = models.FloatField(verbose_name="Montant reduction")
+	client = models.ForeignKey(Client, on_delete=models.CASCADE)
+	total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+	paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	is_credit = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	@property
+	def balance(self):
+		return self.total_amount - self.paid_amount
+	
+	#product = models.ForeignKey(Product, verbose_name="Produit", related_name="sales", on_delete=models.CASCADE)
+	#client = models.ForeignKey(Client, verbose_name="Client", on_delete=models.CASCADE)
+	#quantity = models.IntegerField(verbose_name="Quantité")
+	#payedAmount = models.FloatField(verbose_name="Montant payé")
+	#sale_date = models.DateField(verbose_name="Date livre")
+	#reduction = models.FloatField(verbose_name="Montant reduction")
+
+class SaleItem(models.Model):
+	sale = models.ForeignKey(Sale, related_name='items', on_delete=models.CASCADE)
+	product = models.ForeignKey(Product, related_name="items", on_delete=models.CASCADE)
+	quantity = models.PositiveIntegerField()
+	unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+	total_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+class Payment(models.Model):
+	sale = models.ForeignKey(Sale, related_name='payments', on_delete=models.CASCADE)
+	amount = models.DecimalField(max_digits=12, decimal_places=2)
+	payment_method = models.CharField(
+		max_length=20,
+		choices=[
+			('cash', 'Cash'),
+			('mobile', 'Mobile Money'),
+			('bank', 'Virement'),
+		]
+	)
+	created_at = models.DateTimeField(auto_now_add=True)
 
 class Invoice(models.Model):
 	sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
 	product = models.ForeignKey(Product, on_delete=models.CASCADE)
 	nbProduct = models.IntegerField(verbose_name="Nombre de produit")
-	totalPrice = models.FloatField(verbose_name="Prix total")
-	totalPaid = models.FloatField(verbose_name="Total payé")
+	totalPrice = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Prix total")
+	totalPaid = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Total payé")
 
 
 class Provider(models.Model):
@@ -76,18 +106,18 @@ class Provider(models.Model):
 
 class ClientDebt(models.Model):
 	sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
-	totalAmount = models.FloatField(verbose_name="Total à payé")
-	PaidAmount = models.FloatField(verbose_name="Montant")
+	totalAmount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Total à payé")
+	PaidAmount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Montant")
 
 class InternalDebt():
 	provider = models.ForeignKey(Provider, on_delete=models.CASCADE, null=True, blank=True)
-	amount = models.FloatField()
-	paidAmount = models.FloatField(verbose_name="montant payé")
+	amount = models.DecimalField(max_digits=12, decimal_places=2,)
+	paidAmount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="montant payé")
 	paid = models.BooleanField(default=False)
 
 
 class Spending(models.Model):
-	amount = models.FloatField(verbose_name="Montant")
+	amount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Montant")
 	description = models.TextField(null=True, blank=True)
 	date = models.DateTimeField(auto_now=True)
 

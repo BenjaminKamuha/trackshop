@@ -1,5 +1,5 @@
 from django import forms
-from .models import Stock, Client, Product
+from .models import Stock, Client, Product, Sale
 
 class StockForm(forms.ModelForm):
     class Meta:
@@ -31,7 +31,6 @@ class ProductForm(forms.ModelForm):
         model = Product 
         fields = ["name", "price", "quantity"]
 
-    
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get("name")
@@ -46,3 +45,4 @@ class ProductForm(forms.ModelForm):
 
         elif quantity < 0: 
             raise forms.ValidationError("La quantité est invalide")
+
