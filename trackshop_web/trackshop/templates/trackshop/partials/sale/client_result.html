@@ -1,11 +1,6 @@
-
 <div style="display: flex;">
     {% for c in clients %}
-
-        <div style="border: 2px solid blue;">
-            <label for="client{{ c.id }}">{{ c.complete_name }}</label>
-            <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}">
-        </div>
+    <label for="client{{ c.id }}" style="border: 2px solid blue; height: 50px; margin-left: 10px;">{{ c.complete_name }}</label>
+    <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required onchange="document.getElementById('client_error').remove()">
     {% endfor %}
 </div>
-    

@@ -23,13 +23,10 @@
                     hx-swap="beforeend"
                     hx-on:click="const row=this.closest('div') ;row.querySelector('[name=&quot;prod_selected[]&quot;]').value={{ p.pk }}; document.getElementById('prod{{ p.pk }}').remove();"
                     onclick="document.getElementById('validate-sale-btn').classList.remove('hidden'); document.getElementById('help_text').classList.add('hidden')">{{ p.name }}
-
-            <input type="hidden" name="prod_selected[]" value="{{ product.pk }}">
-
-            </div>
+                    <input type="hidden" name="prod_selected[]" value="{{ product.pk }}">
+                </div>
 
             {% endfor %}
-
         </form>
     </div>
 {% endblock %}
@@ -56,21 +53,20 @@
                  <div style="display: flex;">
                     {% for c in clients %}
                             <label for="client{{ c.id }}" style="border: 2px solid blue; height: 50px; margin-left: 10px;">{{ c.complete_name }}</label>
-                            <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required>
-
+                            <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required onchange="document.getElementById('client_error').remove()">
                     {% endfor %}
                 </div>
             </div>
         </div>
+        
         {% if message %}
-            {{ message }}
+            <p id="client_error" style="color: red;">{{ message }}</p>
         {% endif %}
         <!-- Produits -->
         
 
-        <div id="sale-items" style="width: 50%;">
+        <div id="sale-items" style="width: 60%;">
         </div>
-
         <div id="help_text">
             <p>help text bla bla bla bla </p>
         </div>

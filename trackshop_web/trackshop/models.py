@@ -43,7 +43,7 @@ class Product(models.Model):
 	name = models.CharField(max_length=20)
 	price = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Prix Produit")
 	currency = models.CharField(max_length=5, verbose_name="Dévise", choices=CURRENCY_CHOICES, null=True, blank=True)
-	quantity = models.IntegerField()
+	quantity = models.PositiveIntegerField()
 	dateAdded = models.DateTimeField(auto_now=True)
 	
 	def __str__(self):
@@ -96,7 +96,7 @@ class Payment(models.Model):
 class Invoice(models.Model):
 	sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
 	product = models.ForeignKey(Product, on_delete=models.CASCADE)
-	nbProduct = models.IntegerField(verbose_name="Nombre de produit")
+	nbProduct = models.PositiveIntegerField(verbose_name="Nombre de produit")
 	totalPrice = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Prix total")
 	totalPaid = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Total payé")
 

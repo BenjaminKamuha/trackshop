@@ -247,11 +247,9 @@ def sale_invoice_pdf(request, sale_id):
 	return response
 
 def sale_create(request, message=None):
-	random_product = choice(Product.objects.all())
 	return render(request, "trackshop/sale_form.html", {
 		"clients": Client.objects.all(),
 		"products": Product.objects.all(),
-		"random_product": random_product,
 		"message": message,
 	})
 
@@ -266,31 +264,42 @@ def sale_add_row(request):
 
 @transaction.atomic
 def sale_save(request):
-	product_ids = request.POST.getlist("product_id[]")
-	print(product_ids)
-	if len(product_ids) != len(set(product_ids)):
+	product_ids = request.POST.getlist("product_id[]") 	# Récupération des ids des produits séléctionnée
+	if len(product_ids) != len(set(product_ids)): 		
 		return HttpResponseBadRequest("Produit dupliqué")
 
-	quantities = request.POST.getlist("quantity[]")
-	print(quantities)
+	quantities = request.POST.getlist("quantity[]")		# Récupération des différentes quantités
+	paid_amounts = request.POST.getlist("paidAmount[]")	# Récupération des différentes montants payés
 
-	client_id = request.POST.get("client_id")
+	client_id = request.POST.get("client_id")			# Récupération de l'id du client qui achète
 	if client_id:
 		client = Client.objects.get(id=client_id)
 	else:
-		return redirect("TrackShop:sale-create")
+		return render(request, "trackshop/sale_form.html", {
+		"clients": Client.objects.all(),
+		"products": Product.objects.all(),
+		"message": "Erreur! vous dévez séléctionner un client d'abord",
+	})
 	
+	# Création de la vente
 	sale = Sale.objects.create(
 		client=client,
 		total_amount=0
 	)
 
 	total = Decimal("0")
-	for product_id, qty in zip(product_ids, quantities):
+	total_paid_amount = Decimal("0")
+
+	for product_id, qty, paid_amount in zip(product_ids, quantities, paid_amounts):
+
+		# Récupération du produit et du quantité d'un produit
 		product = Product.objects.get(id=product_id)
 		qty = int(qty)
+		paid_amount = Decimal(paid_amount)
 
-		line_total = product.price * qty 
+		line_total = product.price * qty   # Prix à payer pour le produit en cours
+
+		# Création de la premiere ligne (Une ligne = un produit "item")
 		SaleItem.objects.create(
 			sale=sale,
 			product=product,
@@ -299,19 +308,22 @@ def sale_save(request):
 			total_price=line_total
 		)
 
+		# On diminue la quantité acheté du produit 
 		product.quantity -= qty
 		product.save()
 
-		total += line_total 
+		total += line_total
+		total_paid_amount += paid_amount  
 
+	# verifier si c'est une vente en crédit
+	if (total_paid_amount < total):
+		sale.is_credit = True
+	sale.total_amount = total
+	sale.paid_amount = total_paid_amount
 	
-	sale.total_amount = total 
-	sale.save()
+	sale.save() # Enregistrement de la vente
 
 	return redirect("TrackShop:sale-invoice", sale_id=sale.id)
-	
-
-
 
 def search_client(request):
 	search_input = request.GET.get('client_search', '')

@@ -1,10 +1,18 @@
-<div class="product-row" id="prod{{ product.pk }}" style="border: 2px solid green;">
-    <h1>{{ product }}</h1>
-        <label for="quantity">Quantité: </label>
-        <input type="number" name="quantity[]" min="1" id="quantity" value="1"><br><br>
-        <label for=""></label>
-        <input type="hidden" name="product_id[]" value="{{ product.pk }}"> 
-        <button type="button" onclick="this.closest('div').remove(); updateAddButton()">❌</button>
+<div class="product-row" id="prod{{ product.pk }}" style="border: 2px solid green; padding: 20px;">
+    <span id="header" style="display: flex; justify-content: space-between;">
+        <h1>{{ product }}</h1>
+        <button style="height: 30px;" type="button" onclick="this.closest('div').remove(); updateAddButton()">❌</button>
+    </span>
+        <label for="quantity">Quantité : </label><input type="number" name="quantity[]" min="1" id="quantity" value="1">
+
+        <label for="paid_amount">Montant payé : </label><input id="paid_amount" type="decimal" name="paidAmount[]" min="0.0"><br>
+
+        <label for="product_price">Prix: </label><input type="decimal" name="productPrice" value="{{ product.price }}">
+
+        <label for="">Montant restant : </label><input type="text" readonly>
+
+        <input type="hidden" name="product_id[]" value="{{ product.pk }}"> <br><br>
+
 </div>
 
 <script>
