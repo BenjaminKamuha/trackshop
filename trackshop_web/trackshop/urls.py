@@ -33,5 +33,3 @@ urlpatterns = [
 	path('sale/search_product/', views.search_product, name="search-product"),
 	path('sale/results/select_product/<int:product_pk>/', views.select_product, name="select-product"),
 ]
-
-

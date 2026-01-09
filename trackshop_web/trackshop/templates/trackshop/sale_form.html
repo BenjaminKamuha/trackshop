@@ -47,27 +47,24 @@
                         placeholder="Rechercher un client..."
                         hx-get="{% url 'TrackShop:search-client' %}"
                         hx-trigger="keyup changed"
-                        hx-target="#client_results" required>
+                        hx-target="#client_results">
 
-                    <input type="hidden" name="client_id">
                 
             </div>
 
             <div id="client_results" style="margin-bottom: 30px;">
                  <div style="display: flex;">
                     {% for c in clients %}
-                        <div style="border: solid blue 1px; margin-left: 15px;" class="box" hx-on:click="
-                                document.querySelector('[name=client_search]').value='{{ c.complete_name }}';
-                                document.querySelector('[name=client_id]').value='{{ c.id }}'; 
-                                this.parentElement.innerHtml='';
-                                ">
-                                {{ c.complete_name }}
-                        </div>
+                            <label for="client{{ c.id }}" style="border: 2px solid blue; height: 50px; margin-left: 10px;">{{ c.complete_name }}</label>
+                            <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required>
 
                     {% endfor %}
                 </div>
             </div>
         </div>
+        {% if message %}
+            {{ message }}
+        {% endif %}
         <!-- Produits -->
         
 

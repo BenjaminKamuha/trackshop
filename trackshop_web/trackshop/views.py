@@ -246,12 +246,13 @@ def sale_invoice_pdf(request, sale_id):
 	response['Content-Disposition'] = f'inline; filename="facture_{sale.id}.pdf"'
 	return response
 
-def sale_create(request):
+def sale_create(request, message=None):
 	random_product = choice(Product.objects.all())
 	return render(request, "trackshop/sale_form.html", {
 		"clients": Client.objects.all(),
 		"products": Product.objects.all(),
 		"random_product": random_product,
+		"message": message,
 	})
 
 def sale_add_row(request):
@@ -274,10 +275,11 @@ def sale_save(request):
 	print(quantities)
 
 	client_id = request.POST.get("client_id")
-
-
-	client = Client.objects.get(id=client_id)
-	print(client)
+	if client_id:
+		client = Client.objects.get(id=client_id)
+	else:
+		return redirect("TrackShop:sale-create")
+	
 	sale = Sale.objects.create(
 		client=client,
 		total_amount=0

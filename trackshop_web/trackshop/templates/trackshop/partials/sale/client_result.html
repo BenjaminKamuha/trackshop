@@ -1,11 +1,10 @@
 
 <div style="display: flex;">
     {% for c in clients %}
-        <div style="border: solid blue 1px; margin-left: 15px;" class="box" hx-on:click="
-            document.querySelector('[name=client_search]').value='{{ c.complete_name }}';
-            document.querySelector('[name=client_id]').value='{{ c.id }}'; 
-            this.parentElement.innerHtml='';">
-            {{ c.complete_name }}²
+
+        <div style="border: 2px solid blue;">
+            <label for="client{{ c.id }}">{{ c.complete_name }}</label>
+            <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}">
         </div>
     {% endfor %}
 </div>
