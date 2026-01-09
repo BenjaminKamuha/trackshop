@@ -1,0 +1,19 @@
+<div class="product-row" id="prod{{ product.pk }}" style="border: 2px solid green;">
+    <h1>{{ product }}</h1>
+        <label for="quantity">Quantité: </label>
+        <input type="number" name="quantity[]" min="1" id="quantity" value="1"><br><br>
+        <label for=""></label>
+        <input type="hidden" name="product_id[]" value="{{ product.pk }}"> 
+        <button type="button" onclick="this.closest('div').remove(); updateAddButton()">❌</button>
+</div>
+
+<script>
+    function updateAddButton() {
+        const rows = document.querySelectorAll('.product-row').length;
+        const totalProducts = document.querySelectorAll('[name="product_id[]"]').length;
+        if (rows <= 0){
+            document.getElementById('validate-sale-btn')?.classList.add('hidden');
+            document.getElementById('help_text')?.classList.remove('hidden');
+        }       
+    }
+</script>

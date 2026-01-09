@@ -1,26 +1,22 @@
-<div class="product-row">
-    <!-- Recherche -->
-    <div>
-        <input type="text"
-               placeholder="Rechercher un produit..."
-               hx-get="{% url 'TrackShop:search-product' %}"
-               hx-trigger="keyup changed delay:300ms"
-               hx-target=".results"
-               hx-include="closest .product-row">
+<div class="sale-row" data-sale-row>
 
-        <input type="hidden" name="product_id[]">
+    <input
+        type="text"
+        name="product_search"
+        placeholder="Rechercher un produit…"
+        hx-get="{% url 'TrackShop:search-product' %}"
+        hx-trigger="keyup changed delay:300ms"
+        hx-target=".product-result"
+        hx-swap="innerHTML"
+    >
 
-        <div class="results"></div>
-    </div>
+    <input type="hidden" name="product_id[]">
 
-    <!-- Quantité -->
-    <input type="number" name="quantity[]" value="1" min="1">
+    <div class="product-result"></div>
 
-    <!-- Supprimer -->
-    <button type="button"
-            hx-get="about:blank"
-            hx-target="closest .product-row"
-            hx-swap="outerHTML">
-        ❌
-    </button>
 </div>
+
+    <input type="number" name="quantity[]" min="1" value="1" required>
+        <button type="button" onclick="this.closest('div').remove()">
+            ❌
+    </button>

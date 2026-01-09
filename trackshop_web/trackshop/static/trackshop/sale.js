@@ -13,14 +13,3 @@ document.body.addEventListener('htmx:configRequest', function (e) {
         });
     }
 });
-
-function updateAddButton() {
-    const rows = document.querySelectorAll('.product-row').length;
-    const totalProducts = document.querySelectorAll('select[name="product_id[]"] option').length;
-
-    if (rows < totalProducts) {
-        document.getElementById('add-product-btn')?.classList.remove('hidden');
-    }
-    document.getElementById('message_p')?.classList.add('hidden');
-
-}

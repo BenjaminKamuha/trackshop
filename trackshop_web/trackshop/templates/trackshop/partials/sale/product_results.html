@@ -1,0 +1,15 @@
+<form>
+    {% csrf_token %}
+    {% for p in products %}
+        <div class="block"
+            hx-post="{% url 'TrackShop:select-product' p.pk %}"
+            hx-target="#sale-items"
+            hx-trigger="click"
+            hx-swap="beforeend"
+            hx-on:click="const row=this.closest('div') ;row.querySelector('[name=&quot;prod_selected[]&quot;]').value={{ p.pk }}; document.getElementById('prod{{ p.pk }}').remove();"
+            >{{ p.name }}
+            <input type="hidden" name="prod_selected[]" value="{{ product.pk }}">
+
+        </div>
+    {% endfor %}
+</form>

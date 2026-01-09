@@ -24,7 +24,6 @@ urlpatterns = [
 	path('cash_book/', views.cash_book, name="cash_book"),
 	path('debt/', views.debt, name="debt"),
 	path('setting/', views.setting, name='setting'),
-	
 	path('sale/new/', views.sale_create, name='sale-create'),
 	path('sale/save/', views.sale_save, name='sale-save'),
 	path('sale/add-row/', views.sale_add_row, name='sale-add-row'),
@@ -32,6 +31,7 @@ urlpatterns = [
 	path('sale/<int:sale_id>/invoice/pdf/', views.sale_invoice_pdf, name="sale-invoice-pdf"),
 	path('sale/search_client/', views.search_client, name="search-client"),
 	path('sale/search_product/', views.search_product, name="search-product"),
+	path('sale/results/select_product/<int:product_pk>/', views.select_product, name="select-product"),
 ]
 
 

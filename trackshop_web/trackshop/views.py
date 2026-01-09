@@ -18,6 +18,7 @@ from .models import (
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from decimal import Decimal
+from random import choice
 
 @transaction.atomic
 def add_payment(sale, amount, method):
@@ -246,14 +247,17 @@ def sale_invoice_pdf(request, sale_id):
 	return response
 
 def sale_create(request):
+	random_product = choice(Product.objects.all())
 	return render(request, "trackshop/sale_form.html", {
 		"clients": Client.objects.all(),
 		"products": Product.objects.all(),
+		"random_product": random_product,
 	})
 
 def sale_add_row(request):
-	selected_ids = request.GET.getlist('selected_ids[]')
+	selected_ids = request.GET.getlist('product_id[]')
 	products = Product.objects.exclude(id__in=selected_ids)
+	print(selected_ids)
 
 	return render(request, "trackshop/partials/sale/sale_row.html", {
 		"products": products
@@ -262,16 +266,18 @@ def sale_add_row(request):
 @transaction.atomic
 def sale_save(request):
 	product_ids = request.POST.getlist("product_id[]")
-
+	print(product_ids)
 	if len(product_ids) != len(set(product_ids)):
 		return HttpResponseBadRequest("Produit dupliqué")
 
-	client_id = request.POST.get("client_id")
 	quantities = request.POST.getlist("quantity[]")
+	print(quantities)
+
+	client_id = request.POST.get("client_id")
+
 
 	client = Client.objects.get(id=client_id)
 	print(client)
-
 	sale = Sale.objects.create(
 		client=client,
 		total_amount=0
@@ -301,6 +307,7 @@ def sale_save(request):
 	sale.save()
 
 	return redirect("TrackShop:sale-invoice", sale_id=sale.id)
+	
 
 
 
@@ -313,7 +320,20 @@ def search_client(request):
 	})
 
 def search_product(request):
-	search_input = request.GET.get('product_search', '')
-	products = Product.objects.filter(name__icontains=search_input)[:10]
+    q = request.GET.get("product_search", "")
+    products = Product.objects.filter(name__icontains=q, stock__gt=0)
+    return render(request, "trackshop/partials/sale/product_results.html", {
+        "products": products
+    })
 
-	return render(request, 'trackshop/partials/sale/product_result.html', { 'products': products})
+def select_product(request, product_pk):
+	selected_ids = request.POST.getlist("prod_selected[]")
+	print(selected_ids)
+	product = Product.objects.get(pk=product_pk)
+
+	excluded_ids = [int(pid) for pid in selected_ids if pid.isdigit()]
+
+	return render(request, "trackshop/partials/sale/sale_row_selected.html", {
+        "product": product,
+		"nb_product": len(excluded_ids),
+    })

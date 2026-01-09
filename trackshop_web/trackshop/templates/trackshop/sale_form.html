@@ -1,16 +1,42 @@
 {% extends 'base.html' %}
 
-
 {% block sub_menu %}
     <h1>Vente</h1>
+
+    <input
+        type="text"
+        name="product_search"
+        placeholder="Rechercher un produit…"
+        hx-get="{% url 'TrackShop:search-product' %}"
+        hx-trigger="keyup changed delay:300ms"
+        hx-target="#product-result"
+        hx-swap="innerHTML"
+    >
+    <div id="product-result">
+        <form>
+            {% csrf_token %}
+            {% for p in products %}
+                <div class="block"
+                    hx-post="{% url 'TrackShop:select-product' p.pk %}"
+                    hx-target="#sale-items"
+                    hx-trigger="click"
+                    hx-swap="beforeend"
+                    hx-on:click="const row=this.closest('div') ;row.querySelector('[name=&quot;prod_selected[]&quot;]').value={{ p.pk }}; document.getElementById('prod{{ p.pk }}').remove();"
+                    onclick="document.getElementById('validate-sale-btn').classList.remove('hidden'); document.getElementById('help_text').classList.add('hidden')">{{ p.name }}
+
+            <input type="hidden" name="prod_selected[]" value="{{ product.pk }}">
+
+            </div>
+
+            {% endfor %}
+
+        </form>
+    </div>
 {% endblock %}
 
 {% block content %}
-    <form
-        hx-post="{% url 'TrackShop:sale-save' %}"
-        hx-target="#sale-result"
-        hx-swap="innerHtml">
 
+    <form action="{% url 'TrackShop:sale-save' %}" method="POST">
         {% csrf_token %}
         <!-- Client -->
         <div style="display: flex; flex-direction: row; border-bottom: 2px solid blue; margin: 40px 0 0 40px">
@@ -21,8 +47,10 @@
                         placeholder="Rechercher un client..."
                         hx-get="{% url 'TrackShop:search-client' %}"
                         hx-trigger="keyup changed"
-                        hx-target="#client_results"
-                        hx-indicator=".loading">
+                        hx-target="#client_results" required>
+
+                    <input type="hidden" name="client_id">
+                
             </div>
 
             <div id="client_results" style="margin-bottom: 30px;">
@@ -35,31 +63,23 @@
                                 ">
                                 {{ c.complete_name }}
                         </div>
+
                     {% endfor %}
                 </div>
             </div>
         </div>
-
-        <input type="hidden" name="client_id">
-
-
         <!-- Produits -->
-        <input type="hidden" name="client_id">
+        
 
-        <div id="sale-items"></div>
+        <div id="sale-items" style="width: 50%;">
+        </div>
 
-
-        <button
-            id="add-product-btn"
-            type="button" 
-            hx-get="{% url 'TrackShop:sale-add-row' %}"
-            hx-target="#sale-items"
-            hx-swap="beforeend"
-            hx-include="[name='product_id[]']">
-            + Ajouter produit
-        </button>
-
-        <button type="submit" onclick="submitSale()">Valider la vente</button>
+        <div id="help_text">
+            <p>help text bla bla bla bla </p>
+        </div>
+        
+        <button id="validate-sale-btn" class="hidden" type="submit" onclick="submitSale()">Valider la vente</button>
+        <div id="product_count"></div>
     </form>
 
     <div id="sale-result"></div>
