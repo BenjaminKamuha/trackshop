@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block sub_menu %}
+    <h1>History</h1>
+{% endblock %}
+
+{% block content %}
+    {% for sale in sales %}
+        <div class="sale" style="border-bottom: 2px solid blue;">
+            <p>Date : {{ sale.created_at }}</p>
+            <p>Client : {{ sale.client }}</p>
+            <p>Nombre de produit: {{ sale.items.count }}</p>
+            <p>Montant total: {{ sale.total_amount }}</p>
+            <p>Montant payé: {{ sale.paid_amount }}</p>
+            
+            {% if sale.is_credit %}
+                <p>Status: 
+                    <span style="color:red;">Vente en crédit</span><br>
+                    <div style="border: 2px solid red; width: 30%; margin-left: 50px;">
+                        Payement recent: {{ sale.payments.all.last.amount }} <br>
+                        Montant restant: {{ sale.balance }} <a href="{% url 'TrackShop:add-payment' sale.pk %}"><button>Ajouter Payement</button></a>
+                    </div>
+                        
+
+                </p>
+            {% else %}
+                <p>Status:
+                    <span style="color:green;">Payé</span>
+
+                
+                </p>
+            {% endif %}
+        </div>
+        
+    {% endfor %}
+{% endblock %}

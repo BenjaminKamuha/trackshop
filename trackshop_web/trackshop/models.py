@@ -45,6 +45,7 @@ class Product(models.Model):
 	currency = models.CharField(max_length=5, verbose_name="Dévise", choices=CURRENCY_CHOICES, null=True, blank=True)
 	quantity = models.PositiveIntegerField()
 	dateAdded = models.DateTimeField(auto_now=True)
+	is_active = models.BooleanField(default=True)
 	
 	def __str__(self):
 		return self.name
@@ -65,7 +66,17 @@ class Sale(models.Model):
 	@property
 	def balance(self):
 		return self.total_amount - self.paid_amount
-	
+
+
+	def add_payment(self, amount):
+		Payment.objects.create(
+			sale=self, 
+			amount=amount
+		)
+		self.paid_amount += amount 
+		self.is_credit = self.balance > 0
+		self.save()
+
 	#product = models.ForeignKey(Product, verbose_name="Produit", related_name="sales", on_delete=models.CASCADE)
 	#client = models.ForeignKey(Client, verbose_name="Client", on_delete=models.CASCADE)
 	#quantity = models.IntegerField(verbose_name="Quantité")
@@ -79,19 +90,18 @@ class SaleItem(models.Model):
 	quantity = models.PositiveIntegerField()
 	unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 	total_price = models.DecimalField(max_digits=10, decimal_places=2)
+	paid_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
 class Payment(models.Model):
 	sale = models.ForeignKey(Sale, related_name='payments', on_delete=models.CASCADE)
 	amount = models.DecimalField(max_digits=12, decimal_places=2)
-	payment_method = models.CharField(
-		max_length=20,
-		choices=[
-			('cash', 'Cash'),
-			('mobile', 'Mobile Money'),
-			('bank', 'Virement'),
-		]
-	)
 	created_at = models.DateTimeField(auto_now_add=True)
+
+class ProductReturn(models.Model):
+	sale_item = models.ForeignKey(SaleItem, on_delete=models.PROTECT)
+	quantity = models.PositiveIntegerField()
+	reason = models.TextField(blank=True)
+	date = models.DateTimeField(auto_now_add=True)
 
 class Invoice(models.Model):
 	sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
@@ -104,6 +114,7 @@ class Invoice(models.Model):
 class Provider(models.Model):
 	name = models.CharField(max_length=20)
 
+
 class ClientDebt(models.Model):
 	sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
 	totalAmount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Total à payé")
@@ -111,7 +122,7 @@ class ClientDebt(models.Model):
 
 class InternalDebt():
 	provider = models.ForeignKey(Provider, on_delete=models.CASCADE, null=True, blank=True)
-	amount = models.DecimalField(max_digits=12, decimal_places=2,)
+	amount = models.DecimalField(max_digits=12, decimal_places=2)
 	paidAmount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="montant payé")
 	paid = models.BooleanField(default=False)
 
@@ -122,3 +133,31 @@ class Spending(models.Model):
 	date = models.DateTimeField(auto_now=True)
 
 
+class Inventory(models.Model):
+	INVENTORY_TYPE = {
+		('monthly', 'Mensuel'),
+		('yearly', 'Annuel'),
+	}
+
+	start_date = models.DateField()
+	end_date = models.DateField()
+	inventory_type = models.CharField(max_length=10, choices=INVENTORY_TYPE)
+	closed = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+
+class InventoryItem(models.Model):
+	inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)
+	product = models.ForeignKey(Product, on_delete=models.PROTECT)
+	system_quantity = models.IntegerField()
+	physical_quantity = models.IntegerField()
+	difference = models.IntegerField()
+
+
+class InventorySummary(models.Model):
+	inventory = models.OneToOneField(Inventory, on_delete=models.CASCADE)
+	total_sales = models.DecimalField(max_digits=12, decimal_places=2)
+	total_returns = models.DecimalField(max_digits=12, decimal_places=2)
+	net_revenue = models.DecimalField(max_digits=12, decimal_places=2)
+	total_paid = models.DecimalField(max_digits=12, decimal_places=2)
+	total_credit = models.DecimalField(max_digits=12, decimal_places=2)

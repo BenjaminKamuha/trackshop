@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{% endblock %}
+
+{% block sub_menu %}
+    <h3>Historique de payment</h3>
+
+    {% if sale.payments.all %}
+
+        {% for payment in sale.payments.all %}
+            <h4>{{ payment.created_at }}</h4>
+            <p>{{ payment.amount }}</p>
+        {% endfor %}
+
+    {% else %}
+
+        <p>Aucun paymenet pour la dette de {{ sale.client }}</p>
+
+    {% endif %}
+    
+{% endblock %}
+
+{% block form %}
+    <div id="payment" style="padding: 10px;">
+        <h3>Payment de {{ sale.client }}</h3>
+        <div style="text-align: left; margin: 30px; border-bottom: 2px solid blue;" id="sale_summary">
+            Date: {{ sale.created_at }} <br>
+            Montant total: {{  sale.total_amount }} <br>
+            Total payé: {{ sale.paid_amount }} <br>
+            Reste à payé: {{ sale.balance }}
+        </div>
+
+        <form
+            hx-post="{% url 'TrackShop:add-payment' sale.pk %}" 
+            hx-target="#payment"
+            hx-swap="innerHTML"
+            >
+            {% csrf_token %}
+            <label for="amount">Montant : </label><input id="amount" type="number" name="amount" step="0.01", min="0.01" max="{{ sale.balance }}" placeholder="0.00">
+            <button type="submit" 
+                >Valider</button>
+        </form>
+    </div>
+        
+{% endblock %}

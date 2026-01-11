@@ -22,7 +22,7 @@ urlpatterns = [
 	path('stock/new_product/<int:stock_pk>', views.new_product, name="new_product"),
 	path('stock/product/details/<int:product_pk>', views.product_detail, name="product_details"),
 	path('cash_book/', views.cash_book, name="cash_book"),
-	path('debt/', views.debt, name="debt"),
+	path('history/', views.history, name="history"),
 	path('setting/', views.setting, name='setting'),
 	path('sale/new/', views.sale_create, name='sale-create'),
 	path('sale/save/', views.sale_save, name='sale-save'),
@@ -32,4 +32,5 @@ urlpatterns = [
 	path('sale/search_client/', views.search_client, name="search-client"),
 	path('sale/search_product/', views.search_product, name="search-product"),
 	path('sale/results/select_product/<int:product_pk>/', views.select_product, name="select-product"),
+	path('sale/add_payment/<int:sale_id>', views.add_payment, name="add-payment"),
 ]

@@ -13,27 +13,13 @@ from .models import (
 	Sale,
 	Product,
 	SaleItem,
+	ProductReturn,
 	)
 
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from decimal import Decimal
 from random import choice
-
-@transaction.atomic
-def add_payment(sale, amount, method):
-	Payment.objects.create(
-		sale=sale,
-		amount=amount,
-		payment_method=method
-	)
-	total_paid = sale.payments.aggregate(
-		total=Sum('amount'))['total'] or 0
-	
-	sale.paid_amount = total_paid
-	sale.is_credit = total_paid < sale.total_amount
-	sale.save()
-
 
 now = timezone.now()
 
@@ -204,7 +190,6 @@ def product_detail(request, product_pk):
 
 
 def sale(request):
-		
 	return render(request, "trackshop/sale.html", context={})
 
 
@@ -214,19 +199,20 @@ def cash_book(request):
 def setting(request):
 	return render(request, "trackshop/setting.html", context={})
 
-def debt(request):
-	return render(request, "trackshop/debt.html", context={})
+def history(request):
+	sales = Sale.objects.all().order_by("-created_at")
+	return render(request, "trackshop/history.html", context={"sales": sales})
 
 
-def add_payment_view(request, sale_id):
+def add_payment(request, sale_id):
 	sale = get_object_or_404(Sale, pk=sale_id)
+	if request.method == 'POST':
+		amount = Decimal(request.POST['amount'])
+		print(amount)
+		sale.add_payment(Decimal(amount)) 
+		return render(request, "trackshop/partials/sale/payment_succes.html",  {"sale": sale} )
 
-	amount = Decimal(request.POST['amount'])
-	method = request.POST['payement_method']
-
-	add_payment(sale, amount, method)
-
-	return render(request, "partials/sale/sale_summary.html", {"sale": sale})
+	return render(request, "trackshop/add_payment.html", {"sale": sale})
 
 
 def sale_invoice(request, sale_id):
@@ -305,7 +291,8 @@ def sale_save(request):
 			product=product,
 			quantity=qty,
 			unit_price=product.price,
-			total_price=line_total
+			total_price=line_total,
+			paid_amount=paid_amount
 		)
 
 		# On diminue la quantité acheté du produit 
@@ -315,6 +302,9 @@ def sale_save(request):
 		total += line_total
 		total_paid_amount += paid_amount  
 
+
+	# test
+
 	# verifier si c'est une vente en crédit
 	if (total_paid_amount < total):
 		sale.is_credit = True
@@ -322,8 +312,24 @@ def sale_save(request):
 	sale.paid_amount = total_paid_amount
 	
 	sale.save() # Enregistrement de la vente
+	return redirect("TrackShop:sale-invoice-pdf", sale_id=sale.id)
 
-	return redirect("TrackShop:sale-invoice", sale_id=sale.id)
+
+@transaction.atomic
+def return_product(sale_item, qty):
+	if qty > sale_item.quantity:
+		raise ValidationError("Retour invalide")
+	
+	product = sale_item.product 
+	product.quantity += qty 
+	product.is_active = True
+	product.save()
+
+	ProductReturn.objects.create(
+		sale_item = sale_item,
+		quantity = qty
+	)
+
 
 def search_client(request):
 	search_input = request.GET.get('client_search', '')

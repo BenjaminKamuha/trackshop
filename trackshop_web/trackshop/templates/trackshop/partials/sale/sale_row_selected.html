@@ -3,13 +3,58 @@
         <h1>{{ product }}</h1>
         <button style="height: 30px;" type="button" onclick="this.closest('div').remove(); updateAddButton()">❌</button>
     </span>
-        <label for="quantity">Quantité : </label><input type="number" name="quantity[]" min="1" id="quantity" value="1">
+        <label for="quantity">Quantité : </label><input type="number" name="quantity[]" min="1" id="quantity" value="1" onchange="
+            const row = this.closest('.product-row');
+            const input_quantity = row.querySelector('#quantity').value;
+            const product_price = row.querySelector('#product_price').value;
+            const input_paid_amount = row.querySelector('#paid_amount')
+            var leftover_amount = row.querySelector('#leftover_amount');
+            // On change la valeur du montant à payer en fonction de la quantity entrée
+            input_paid_amount.value = input_quantity * product_price;
+            leftover_amount.value = (input_quantity * product_price) - input_paid_amount.value;
+            " onkeyup="
+            const row4 = this.closest('.product-row');
+            const input_quantity4 = row4.querySelector('#quantity').value;
+            const product_price4 = row4.querySelector('#product_price').value;
+            const input_paid_amount4 = row4.querySelector('#paid_amount')
+            var leftover_amount4 = row4.querySelector('#leftover_amount');
+            // On change la valeur du montant à payer en fonction de la quantity entrée
+            input_paid_amount4.value = input_quantity4 * product_price4;
+            leftover_amount4.value = (input_quantity4 * product_price4) - input_paid_amount4.value;
+            ">
 
-        <label for="paid_amount">Montant payé : </label><input id="paid_amount" type="decimal" name="paidAmount[]" min="0.0"><br>
+        <label for="paid_amount">Montant payé : </label><input id="paid_amount" type="number" step="0.01" name="paidAmount[]" min="0" placeholder="0.00" value="{{ product.price }}" onkeyup="
+            
+            const row2 = this.closest('.product-row');
+            const input_quantity2 = row2.querySelector('#quantity').value;
+            const product_price2 = row2.querySelector('#product_price').value;
+            var leftover_amount = row2.querySelector('#leftover_amount');
 
-        <label for="product_price">Prix: </label><input type="decimal" name="productPrice" value="{{ product.price }}">
+            leftover_amount.value = (product_price2 * input_quantity2) - this.value;
+            
+            if (this.value > product_price2 * input_quantity2){
+                leftover_amount.value = 0;
+            }
+            
 
-        <label for="">Montant restant : </label><input type="text" readonly>
+        " onchange="
+            const row3 = this.closest('.product-row');
+            const input_quantity3 = row3.querySelector('#quantity').value;
+            const product_price3 = row3.querySelector('#product_price').value;
+            var leftover_amount2 = row3.querySelector('#leftover_amount');
+
+            leftover_amount2.value = (product_price3 * input_quantity3) - this.value;
+            
+            if (this.value > product_price3 * input_quantity3){
+                leftover_amount2.value = 0;
+            }
+            
+        "><br>
+
+        <label for="product_price">Prix : </label><input id="product_price" type="decimal" name="productPrice" value="{{ product.price }}" read>
+
+        <label for="leftover_amount">Montant restant : </label><input id="leftover_amount" type="number" step="0.01" min="0" value="0" readonly>
+
 
         <input type="hidden" name="product_id[]" value="{{ product.pk }}"> <br><br>
 
@@ -22,6 +67,11 @@
         if (rows <= 0){
             document.getElementById('validate-sale-btn')?.classList.add('hidden');
             document.getElementById('help_text')?.classList.remove('hidden');
-        }       
+        }
+    }
+
+    function updateProductPrice(){
+        document.getElementById("quantity").closest('div').classList.add('hidden');
+
     }
 </script>
