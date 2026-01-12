@@ -1,0 +1,7 @@
+<h4>Retour du produit {{ item.product }}</h4>
+
+<form action="{% url 'TrackShop:product-return' item.pk %}" method="POST">
+    {% csrf_token %}
+    <label for="quantity">Quantité à retourné : </label> <input type="number" name="quantity" min="0" max="{{ item.quantity }}" placeholder="0"><br>
+    <button type="submit">Valider</button>
+</form>

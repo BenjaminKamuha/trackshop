@@ -97,8 +97,9 @@ class Payment(models.Model):
 	amount = models.DecimalField(max_digits=12, decimal_places=2)
 	created_at = models.DateTimeField(auto_now_add=True)
 
+
 class ProductReturn(models.Model):
-	sale_item = models.ForeignKey(SaleItem, on_delete=models.PROTECT)
+	sale_item = models.ForeignKey(SaleItem, related_name='returns', on_delete=models.PROTECT)
 	quantity = models.PositiveIntegerField()
 	reason = models.TextField(blank=True)
 	date = models.DateTimeField(auto_now_add=True)

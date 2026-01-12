@@ -23,6 +23,7 @@ urlpatterns = [
 	path('stock/product/details/<int:product_pk>', views.product_detail, name="product_details"),
 	path('cash_book/', views.cash_book, name="cash_book"),
 	path('history/', views.history, name="history"),
+	path('history/product_return/<int:item_pk>/', views.save_return, name="product-return"),
 	path('setting/', views.setting, name='setting'),
 	path('sale/new/', views.sale_create, name='sale-create'),
 	path('sale/save/', views.sale_save, name='sale-save'),

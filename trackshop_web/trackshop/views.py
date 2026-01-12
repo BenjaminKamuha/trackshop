@@ -26,7 +26,6 @@ now = timezone.now()
 def index(request):
 	return render(request, "trackshop/index.html")
 
-
 def dashboard(request):
 	# nombre de stock
 	today = timezone.now().date()
@@ -172,7 +171,7 @@ def new_product(request, stock_pk):
 
 def product_detail(request, product_pk):
 	product = get_object_or_404(Product, pk=product_pk)
-	evaliable_quantity = product.quantity - product.items.count()
+	evaliable_quantity = product.quantity
 	sales_this_month = SaleItem.objects.filter(
 		product=product,
 	).count()
@@ -295,9 +294,12 @@ def sale_save(request):
 			paid_amount=paid_amount
 		)
 
-		# On diminue la quantité acheté du produit 
+		# On diminue la quantité acheté du produit
+		print(f'******************{product.quantity}******************')
 		product.quantity -= qty
 		product.save()
+		print(f'******************{product.quantity}******************')
+
 
 		total += line_total
 		total_paid_amount += paid_amount  
@@ -329,6 +331,16 @@ def return_product(sale_item, qty):
 		sale_item = sale_item,
 		quantity = qty
 	)
+
+
+def save_return(request, item_pk):
+	item = get_object_or_404(SaleItem, pk=item_pk)
+	if request.method == "POST":
+		qty = int(request.POST['quantity'])
+		return_product(item, qty)
+		return redirect("TrackShop:history")
+
+	return render(request, "trackshop/partials/sale/product_return.html", {"item": item})
 
 
 def search_client(request):
