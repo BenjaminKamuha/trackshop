@@ -21,7 +21,7 @@
                                     {% for return in item.returns.all %}
                                         <div style="border: 1px solid gray;">
                                             <p>Date: {{ return.date }}</p>
-                                            <p>Quantité: {{ return.quantity }}</p>
+                                            <p>Quantité: {{ returrn.quantity }}</p>
                                             <p>Reason: {{ return.reason }}</p>
                                         </div>
                                     {% endfor %}
@@ -35,7 +35,6 @@
                         </div>                
                     {% endfor %}
                 </div>
-
 
             <p>Montant total: {{ sale.total_amount }}</p>
             <p>Montant payé: {{ sale.paid_amount }}</p>

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block sub_menu %}
+    <h1>Inventory</h1>
+
+    <a href="" hx-get="{% url 'TrackShop:new-inventory' %}" hx-trigger="click" hx-target="#form">Nouveau</a>
+
+    {% for inventory in inventories %}
+
+        <div style="border: 2px solid blue;" hx-get="{% url 'TrackShop:load-inventory' inventory.pk %}" hx-target="#inventory_view" hx-trigger="click" class="box">
+            <p>{{ inventory }} type: {{ inventory.inventory_type }}</p>
+        </div>
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+        <div id="inventory_view">
+            <h1>Inventaire du {{ last_created.created_at|date:"d/m/Y" }}</h1>
+            <p>Vente totales: {{ last_created.summary.total_sales }}</p>
+            <p>Produit retournés: {{ last_created.summary.total_returns }}</p>
+            <p>Revenue net: {{ last_created.summary.net_revenue }}</p>
+            <p>Montant tôtal payé: {{ last_created.summary.total_paid }}</p>
+            <p>Crédit tôtal: {{ last_created.summary.total_credit }}</p>
+        </div>
+{% endblock %}

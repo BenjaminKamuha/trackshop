@@ -14,6 +14,7 @@ CLIENT_CATEGORY = [
 	("client occasionnel", "client occasionnel"),
 
 ]
+
 class Client(models.Model):
 	complete_name = models.CharField(max_length=20, null=True, blank=True, verbose_name="Nom complet")
 	phoneNumber = models.CharField(max_length=15, null=True, blank=True, verbose_name="Numéro de téléphone")
@@ -32,7 +33,7 @@ class Stock(models.Model):
 
 	def __str__(self):
 		return self.stockName
-
+ 
 CURRENCY_CHOICES = [
 	("USD", "DOLLARS"),
 	("CDF", "FRANC")
@@ -110,7 +111,7 @@ class Invoice(models.Model):
 	nbProduct = models.PositiveIntegerField(verbose_name="Nombre de produit")
 	totalPrice = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Prix total")
 	totalPaid = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Total payé")
-
+ 
 
 class Provider(models.Model):
 	name = models.CharField(max_length=20)
@@ -146,17 +147,20 @@ class Inventory(models.Model):
 	closed = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 
+	def __str__(self):
+		return f'Inventaire du {self.start_date} au {self.end_date}'
 
 class InventoryItem(models.Model):
-	inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)
+	inventory = models.ForeignKey(Inventory, related_name="items", on_delete=models.CASCADE)
 	product = models.ForeignKey(Product, on_delete=models.PROTECT)
 	system_quantity = models.IntegerField()
 	physical_quantity = models.IntegerField()
 	difference = models.IntegerField()
 
 
+
 class InventorySummary(models.Model):
-	inventory = models.OneToOneField(Inventory, on_delete=models.CASCADE)
+	inventory = models.OneToOneField(Inventory, related_name="summary", on_delete=models.CASCADE)
 	total_sales = models.DecimalField(max_digits=12, decimal_places=2)
 	total_returns = models.DecimalField(max_digits=12, decimal_places=2)
 	net_revenue = models.DecimalField(max_digits=12, decimal_places=2)

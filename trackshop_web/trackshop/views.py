@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, F, DecimalField
 from .forms import StockForm, ProductForm, ClientForm
 from .models import (
 	Stock, 
@@ -13,7 +13,11 @@ from .models import (
 	Sale,
 	Product,
 	SaleItem,
+	Payment,
 	ProductReturn,
+	Inventory,
+	InventoryItem,
+	InventorySummary,
 	)
 
 from django.template.loader import render_to_string
@@ -195,9 +199,101 @@ def sale(request):
 def cash_book(request):
 	return render(request, "trackshop/cashbook.html", context={})
 
-def setting(request):
-	return render(request, "trackshop/setting.html", context={})
+@transaction.atomic
+def create_inventory(start_date, end_date, inv_type):
+	# Création de l'objet inventaire
+	inventory = Inventory.objects.create(
+		start_date=start_date,
+		end_date=end_date,
+		inventory_type=inv_type
+	)
 
+	# Génération des lignes
+	for product in Product.objects.all():
+		InventoryItem.objects.create(
+			inventory=inventory,
+			product=product,
+			system_quantity=product.quantity,
+			physical_quantity=product.quantity,
+			difference=0
+		)
+
+	# Calcul des ventes
+	total_sales = (
+		SaleItem.objects.filter(
+			sale__created_at__range=[inventory.start_date, inventory.end_date]
+		).aggregate(
+			total=Sum(F('quantity') * F('unit_price'))
+		)['total'] or Decimal('0')
+	)
+
+	# Calcul des retours
+	total_returns = (
+		ProductReturn.objects.filter(
+			date__range=[inventory.start_date, inventory.end_date]
+		).aggregate(
+			total=Sum(F('quantity') * F('sale_item__unit_price'))
+		)['total'] or Decimal('0')
+	)
+	# Calcul des paiements
+	total_paid = (
+		Payment.objects.filter(
+			created_at__range=[inventory.start_date, inventory.end_date]
+		).aggregate(
+			total=Sum('amount')
+			)['total'] or Decimal('0')
+	)
+
+	# Calcul du crédit
+	total_credit = (
+		Sale.objects.filter(
+			created_at__lte=inventory.end_date, 
+			is_credit=True
+		).aggregate(
+			total=Sum(
+				F('total_amount') - F('paid_amount'),
+				output_field=DecimalField()
+			)
+		)['total'] or Decimal('0')
+	)
+
+	# Résumé final
+	InventorySummary.objects.create(
+		inventory=inventory,
+		total_sales=total_sales,
+		total_returns=total_returns,
+		net_revenue=total_sales - total_returns,
+		total_paid=total_paid,
+		total_credit=total_credit
+	)
+
+	# Cloture de l'inventair
+	inventory.closed = True 
+	inventory.save()
+
+
+def inventory(request):
+	inventories = Inventory.objects.all()
+	last_created = Inventory.objects.all().last()
+	return render(request, "trackshop/inventory.html", context={"last_created": last_created, "inventories": inventories})
+
+def new_inventory_view(request):
+	if request.method == "POST":
+		start_date = request.POST['start_date']
+		end_date = request.POST['end_date']
+		inventory_type = request.POST['inventory_type']
+
+		# Création de l'inventaire
+		create_inventory(start_date, end_date, inventory_type)
+		return redirect('TrackShop:inventory')
+
+	return render(request, "trackshop/partials/inventory/inventory_form.html", {})
+
+def load_inventory(request, inv_pk):
+	inventory = get_object_or_404(Inventory, pk=inv_pk)
+	return render(request, "trackshop/partials/inventory/inventory_view.html", {'inventory':inventory})
+			
+		
 def history(request):
 	sales = Sale.objects.all().order_by("-created_at")
 	return render(request, "trackshop/history.html", context={"sales": sales})
@@ -295,10 +391,8 @@ def sale_save(request):
 		)
 
 		# On diminue la quantité acheté du produit
-		print(f'******************{product.quantity}******************')
 		product.quantity -= qty
 		product.save()
-		print(f'******************{product.quantity}******************')
 
 
 		total += line_total

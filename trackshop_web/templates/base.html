@@ -42,7 +42,7 @@
 						<a href="{% url 'TrackShop:sale-create' %}">Vente</a>
 						<a href="{% url 'TrackShop:cash_book' %}">Livre de caisse</a>
 						<a href="{% url 'TrackShop:history' %}">Historique</a>
-						<a href="{% url 'TrackShop:setting' %}">Paramères</a>
+						<a href="{% url 'TrackShop:inventory' %}">Eventaire</a>
 					</ul>
 				{% endblock %}
 			</nav>
@@ -56,7 +56,6 @@
 			{% block content %}
 			{% endblock %}	
 		</div>
-
 		<div id="form" style="border: 1px solid violet; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
 			{% block form %}
 			{% endblock %}
@@ -64,6 +63,5 @@
 	</main>
 </body>
 <footer>
-
 </footer>
 </html>
