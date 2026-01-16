@@ -1,4 +1,4 @@
-{% load static django_htmx django_browser_reload %}
+{% load static django_htmx django_browser_reload tailwind_tags %}
 
 
 <!DOCTYPE html>
@@ -9,6 +9,7 @@
 	<title>Trackshop</title>
 	{% htmx_script %}
 	<script src="{% static 'trackshop/sale.js' %}" defer></script>
+	<script src="{% static 'trackshop/kpi.js' %}"></script>
 	<style>
 		.hidden {
 			display: none;
@@ -26,37 +27,42 @@
 		}
 	</style>
 	
+	{% tailwind_css %}
 </head>
-<body>
-	<p>Extended by 'base.html'</p>
+<body class="">
 	{% if debug %}
 		{% django_browser_reload_script %}
 	{% endif %}
-	<header >
-			<nav style="text-align: center;">
+	<header class="flex justify-between items-center w-full p-2 shadow-xl  backdrop-blur-lg pl-5 pr-5">
+			<span id="logo" class="border rounded-full p-3 text-5xl">Ts</span>
+			<nav class="" >
 				{% block nav %}
-				    <ul id="main_nav">
+				    <ul id="main_nav" class="w-full">
 						<a href="{% url 'TrackShop:dashboard' %}">Dashboard</a>
-						<a href="{% url 'TrackShop:stock' %}">Stock</a>
-						<a href="{% url 'TrackShop:client' %}">Clients</a>
-						<a href="{% url 'TrackShop:sale-create' %}">Vente</a>
-						<a href="{% url 'TrackShop:cash_book' %}">Livre de caisse</a>
-						<a href="{% url 'TrackShop:history' %}">Historique</a>
-						<a href="{% url 'TrackShop:inventory' %}">Eventaire</a>
+						<a href="{% url 'TrackShop:stock' %}" class="ml-10">Stock</a>
+						<a href="{% url 'TrackShop:client' %}" class="ml-10">Clients</a>
+						<a href="{% url 'TrackShop:sale-create' %}" class="ml-10">Vente</a>
+						<a href="{% url 'TrackShop:cash_book' %}" class="ml-10">Livre de caisse</a>
+						<a href="{% url 'TrackShop:history' %}" class="ml-10">Historique</a>
+						<a href="{% url 'TrackShop:inventory' %}" class="ml-10">Inventaire</a>
 					</ul>
 				{% endblock %}
 			</nav>
+			<span class="rounded-full border h-15 w-15 pt-4 text-center text-xl">User</span>
 	</header>
+
 	<main style="display: flex;">
-			<div style="width: 200px;">
-				{% block sub_menu %}
-				{% endblock %}
+			<div class="flex justify-between pt-10 w-60 p-2 shadow-xl h-169 ">
+				<div>
+					{% block sub_menu %}
+					{% endblock %}
+				</div>
 			</div>
-		<div style="width: 100%; padding: 0 15px 0 15px">
+		<div class="w-full p-10 0 15px 0 15px">
 			{% block content %}
 			{% endblock %}	
 		</div>
-		<div id="form" style="border: 1px solid violet; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+		<div id="form" style="border: 1px solid violet; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;" class="backdrop-blur-lg">
 			{% block form %}
 			{% endblock %}
 		</div>

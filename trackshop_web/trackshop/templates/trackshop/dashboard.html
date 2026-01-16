@@ -2,39 +2,33 @@
 
 
 {% block sub_menu %}
-    <h1>Dashboard</h1>
+    <h1 class="text-3xl">Dashboard</h1>
 {% endblock %}
 
 {% block content %}
-    <div id="dashboard" style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-        <div id="stock" style="border: 2px solid rgb(0, 247, 255);text-align: center; width: 10%; padding: 0 0 15px 0;">
-            <h3>Stock</h3>
-            <h2>{{ stocks.count }}</h2>
-            <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=dashboard" hx-trigger="click" hx-target="#form">Ajouter</button></a>
-        </div>
+    <div id="kpi" style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+        {% include "components/kpi_card.html" with title="Stock" value=stocks.count %}
 
-        <div id="client" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
-            <h3>Clients</h3>
-            <h2>{{ clients.count }}</h2>
-            <a href="" hx-get="{% url 'TrackShop:new_client' %}?from=dashboard" hx-trigger="click" hx-target="#form"><button>Ajouter</button></a>
-        </div>
+        {% include "components/kpi_card.html" with title="Ventes aujourd'hui" value=todaySales.count %}
 
-        <div id="spending" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
-            <h3 >Dépenses</h3>
-            <h2>{{ todaySpending.count }}</h2>
-            <p>Aujourd'hui</p>
-        </div>
-        
-        <div id="debt" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
-            <h3 >Dettes</h3>
-            <h2>{{ debts.count }}</h2>
-        </div>
+        {% include "components/kpi_card.html" with title="Crédits" value=debts.count %}
 
-        <div id="sale" style="border: 2px solid rgb(0, 247, 255); text-align: center; width: 10%; padding: 0 0 15px 0;">
-            <h3 >Vente</h3>
-            <h2>{{ todaySales.count }}</h2>
-            <p>Aujourd'hui</p>
-        </div>
+        {% include "components/kpi_card.html" with title="Client" value=clients.count %}
+
+        {% include "components/kpi_card.html" with title="Produits" value=products %}
+    </div>
+
+    <div class="flex wrap justify-between mt-5 h-50">
+            <div class="rounded-xl p-5 shadow-lg m-2 flex">
+                <span>Evolution du chiffre d'affaire</span>
+            </div>
+            <div class="rounded-xl p-5 shadow-lg m-2 flex">
+                <span>Evolution du chiffre d'affaire</span>
+            </div>
+
+            <div class="rounded-xl p-5 shadow-lg m-2 flex">
+                <span>Repartition des ventes par produit</span>
+            </div>
     </div>
 
     

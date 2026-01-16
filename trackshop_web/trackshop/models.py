@@ -127,7 +127,7 @@ class InternalDebt():
 	amount = models.DecimalField(max_digits=12, decimal_places=2)
 	paidAmount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="montant payé")
 	paid = models.BooleanField(default=False)
-
+   
 
 class Spending(models.Model):
 	amount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Montant")
@@ -156,7 +156,6 @@ class InventoryItem(models.Model):
 	system_quantity = models.IntegerField()
 	physical_quantity = models.IntegerField()
 	difference = models.IntegerField()
-
 
 
 class InventorySummary(models.Model):

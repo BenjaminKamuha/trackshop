@@ -1,0 +1,12 @@
+<div class="w-full m-2 bg-white/10 rounded-full h-{{ height|default:3 }} overflow-hidden">
+    <div class="h-full rounded-full transition-all duration-700 {{ color|default:'bg-green-500' }}"
+    style="width: 0%"
+    data-progress="{{ value }}">
+    </div>
+</div>
+
+{% if show_label %}
+    <p class="mt-1 text-sm text-gray-400">
+        {{ value }}%
+    </p>
+{% endif %}

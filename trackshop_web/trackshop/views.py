@@ -246,7 +246,7 @@ def create_inventory(start_date, end_date, inv_type):
 
 	# Calcul du crédit
 	total_credit = (
-		Sale.objects.filter(
+		Sale.objects.filter(                                    
 			created_at__lte=inventory.end_date, 
 			is_credit=True
 		).aggregate(
@@ -269,7 +269,7 @@ def create_inventory(start_date, end_date, inv_type):
 
 	# Cloture de l'inventair
 	inventory.closed = True 
-	inventory.save()
+	inventory.save() 
 
 
 def inventory(request):
