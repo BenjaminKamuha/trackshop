@@ -222,6 +222,9 @@
   .m-2 {
     margin: calc(var(--spacing) * 2);
   }
+  .m-10 {
+    margin: calc(var(--spacing) * 10);
+  }
   .mx-auto {
     margin-inline: auto;
   }
@@ -236,6 +239,9 @@
   }
   .mb-2 {
     margin-bottom: calc(var(--spacing) * 2);
+  }
+  .mb-5 {
+    margin-bottom: calc(var(--spacing) * 5);
   }
   .ml-10 {
     margin-left: calc(var(--spacing) * 10);

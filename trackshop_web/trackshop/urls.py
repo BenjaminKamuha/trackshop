@@ -5,7 +5,8 @@ app_name = "TrackShop"
 
 urlpatterns = [
 	path('', views.index, name='index'),
-	path('dashboard', views.dashboard, name='dashboard'),
+	path('set_exchange_rate/', views.set_exchange_rate, name='set-exchange-rate'),
+	path('dashboard/', views.dashboard, name='dashboard'),
 	path('new_stock/', views.new_stock, name='new_stock'),
 	path('new_client/', views.new_client, name='new_client'),
 	path('client/', views.client, name="client"),

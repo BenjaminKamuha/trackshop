@@ -1,8 +1,15 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load tailwind_tags %}
+
+{% block title %}Nouvelle Vente{% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" href="{% static 'trackshop/css/sale_form.css' %}">
+{% endblock %}
 
 {% block sub_menu %}
     <h1>Vente</h1>
-
     <input
         type="text"
         name="product_search"
@@ -22,17 +29,18 @@
                     hx-trigger="click"
                     hx-swap="beforeend"
                     hx-on:click="const row=this.closest('div') ;row.querySelector('[name=&quot;prod_selected[]&quot;]').value={{ p.pk }}; document.getElementById('prod{{ p.pk }}').remove();"
-                    onclick="document.getElementById('validate-sale-btn').classList.remove('hidden'); document.getElementById('help_text').classList.add('hidden')">{{ p.name }}
+                    onclick="document.getElementById('validate-sale-btn').classList.remove('hidden'); 
+                    document.getElementById('help_text').classList.add('hidden');
+                    document.getElementById('currency').classList.remove('hidden')
+                    ">{{ p.name }}
                     <input type="hidden" name="prod_selected[]" value="{{ product.pk }}">
                 </div>
-
             {% endfor %}
         </form>
     </div>
 {% endblock %}
 
 {% block content %}
-
     <form action="{% url 'TrackShop:sale-save' %}" method="POST">
         {% csrf_token %}
         <!-- Client -->
@@ -45,9 +53,7 @@
                         hx-get="{% url 'TrackShop:search-client' %}"
                         hx-trigger="keyup changed"
                         hx-target="#client_results">
-   
             </div>
-
             <div id="client_results" style="margin-bottom: 30px;">
                  <div style="display: flex;">
                     {% for c in clients %}
@@ -57,23 +63,33 @@
                 </div>
             </div>
         </div>
-        
+        <div class="mb-5 hidden" id="currency">
+            <label for="currency">Selectionner la Dévise: </label>
+            <select id="currency_select" name="currency" id="" required>
+                <option value="USD">USD</option>
+                <option value="CDF">CDF</option>
+            </select>
+            <label for="" class="ml-10">Taux du jours</label>
+            <input type="number" step="0.0001" name="rate" id="rate" value="{{ rate }}" readonly>
+        </div>
         {% if message %}
             <p id="client_error" style="color: red;">{{ message }}</p>
         {% endif %}
         <!-- Produits -->
-        
 
         <div id="sale-items" style="width: 60%;">
         </div>
         <div id="help_text">
             <p>help text bla bla bla bla </p>
         </div>
-        
+
         <button id="validate-sale-btn" class="hidden" type="submit" onclick="submitSale()">Valider la vente</button>
         <div id="product_count"></div>
     </form>
 
     <div id="sale-result"></div>
+{% endblock %}
 
+{% block scripts %}
+    <script src="{% static 'trackshop/js/sale_form.js' %}"></script>
 {% endblock %}

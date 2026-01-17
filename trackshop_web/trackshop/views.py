@@ -18,6 +18,8 @@ from .models import (
 	Inventory,
 	InventoryItem,
 	InventorySummary,
+	Currency,
+	ExchangeRate,
 	)
 
 from django.template.loader import render_to_string
@@ -29,6 +31,37 @@ now = timezone.now()
 
 def index(request):
 	return render(request, "trackshop/index.html")
+
+def set_exchange_rate(request):
+
+	last_rate = ExchangeRate.objects.all().last()
+	
+	if request.method == "POST":
+		from_code = request.POST['from_currency']
+		to_code = request.POST['to_currency']
+		rate = request.POST['rate']
+
+		ExchangeRate.objects.update_or_create(
+			from_currency=Currency.objects.get(code=from_code),
+			to_currency=Currency.objects.get(code=to_code),
+			date=now.date(),
+			defaults={"rate": rate}
+		)
+		
+		return redirect("TrackShop:dashboard")
+
+	return render(request, "trackshop/set_exchange_rate.html", {'last_rate': last_rate })
+
+def get_today_rate(from_currency, to_currency):
+	try:
+		return ExchangeRate.objects.get(
+			from_currency=from_currency,
+			to_currency=to_currency,
+			date=now.date()
+		).rate 
+
+	except ExchangeRate.DoesNotExist:
+		raise ValidationError("Taux du jour non défini")
 
 def dashboard(request):
 	# nombre de stock
@@ -302,9 +335,18 @@ def history(request):
 def add_payment(request, sale_id):
 	sale = get_object_or_404(Sale, pk=sale_id)
 	if request.method == 'POST':
+		currency_code = request.POST.get("currency")
 		amount = Decimal(request.POST['amount'])
-		print(amount)
-		sale.add_payment(Decimal(amount)) 
+		
+		currency = Currency.objects.get(code=currency_code)
+		base_currency = Currency.objects.get(code="CDF")
+
+		rate = (
+			ExchangeRate.objects.filter(from_currency=currency, to_currency=base_currency).latest('date').rate
+		)
+
+		sale.add_payment(Decimal(amount, currency, rate)) 
+
 		return render(request, "trackshop/partials/sale/payment_succes.html",  {"sale": sale} )
 
 	return render(request, "trackshop/add_payment.html", {"sale": sale})
@@ -328,9 +370,16 @@ def sale_invoice_pdf(request, sale_id):
 	return response
 
 def sale_create(request, message=None):
+	
+	rate = get_today_rate(
+		from_currency=Currency.objects.get(code="USD"),
+		to_currency=Currency.objects.get(code="CDF")
+	)
+	
 	return render(request, "trackshop/sale_form.html", {
 		"clients": Client.objects.all(),
 		"products": Product.objects.all(),
+		'rate': rate,
 		"message": message,
 	})
 
@@ -345,11 +394,22 @@ def sale_add_row(request):
 
 @transaction.atomic
 def sale_save(request):
+	currency_code = request.POST.get("currency")
+	print(currency_code)
+	currency = Currency.objects.get(code=currency_code)
+	print(f'currency: {currency.code}')
+	base_currency = Currency.objects.get(code="CDF")
+
+	rate = (
+		ExchangeRate.objects.filter(from_currency=currency, to_currency=base_currency).latest('date').rate
+	)
+
 	product_ids = request.POST.getlist("product_id[]") 	# Récupération des ids des produits séléctionnée
 	if len(product_ids) != len(set(product_ids)): 		
 		return HttpResponseBadRequest("Produit dupliqué")
 
 	quantities = request.POST.getlist("quantity[]")		# Récupération des différentes quantités
+
 	paid_amounts = request.POST.getlist("paidAmount[]")	# Récupération des différentes montants payés
 
 	client_id = request.POST.get("client_id")			# Récupération de l'id du client qui achète
@@ -365,7 +425,10 @@ def sale_save(request):
 	# Création de la vente
 	sale = Sale.objects.create(
 		client=client,
-		total_amount=0
+		currency=currency,
+		exchange_rate=rate, 
+		total_amount=0,
+		total_amount_base=0
 	)
 
 	total = Decimal("0")
@@ -405,7 +468,9 @@ def sale_save(request):
 	if (total_paid_amount < total):
 		sale.is_credit = True
 	sale.total_amount = total
+	sale.total_amount_base = total * rate
 	sale.paid_amount = total_paid_amount
+	sale.paid_amount_base = total_paid_amount * rate
 	
 	sale.save() # Enregistrement de la vente
 	return redirect("TrackShop:sale-invoice-pdf", sale_id=sale.id)

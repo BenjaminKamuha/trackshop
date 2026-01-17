@@ -39,6 +39,23 @@ CURRENCY_CHOICES = [
 	("CDF", "FRANC")
 ]
 
+class Currency(models.Model):
+	code = models.CharField(max_length=3, unique=True)
+	name = models.CharField(max_length=50)
+	symbol = models.CharField(max_length=3)
+
+	def __str__(self):
+		return self.code
+
+class ExchangeRate(models.Model):
+	from_currency = models.ForeignKey(Currency, related_name='rates_from', on_delete=models.CASCADE)
+	to_currency = models.ForeignKey(Currency, related_name='+', on_delete=models.CASCADE)
+	rate = models.DecimalField(max_digits=15, decimal_places=6)
+	date = models.DateField()
+
+	class Meta:
+		unique_together = ('from_currency', 'to_currency', 'date')
+
 class Product(models.Model):
 	stock = models.ForeignKey(Stock, verbose_name="Stock", related_name="products", on_delete=models.CASCADE)
 	name = models.CharField(max_length=20)
@@ -59,8 +76,12 @@ class CashBook(models.Model):
 
 class Sale(models.Model):
 	client = models.ForeignKey(Client, on_delete=models.CASCADE)
+	currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
+	exchange_rate = models.DecimalField(max_digits=15, decimal_places=6)
 	total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+	total_amount_base = models.DecimalField(max_digits=12, decimal_places=2)
 	paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	paid_amount_base = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	is_credit = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 
@@ -69,21 +90,19 @@ class Sale(models.Model):
 		return self.total_amount - self.paid_amount
 
 
-	def add_payment(self, amount):
+	def add_payment(self, amount, currency, rate):
 		Payment.objects.create(
 			sale=self, 
-			amount=amount
+			currency=currency,
+			exchange_rate=rate,
+			amount=amount,
+			amount_base=amount * rate
 		)
-		self.paid_amount += amount 
+		self.paid_amount += amount
+		self.paid_amount_base += amount * rate
 		self.is_credit = self.balance > 0
 		self.save()
 
-	#product = models.ForeignKey(Product, verbose_name="Produit", related_name="sales", on_delete=models.CASCADE)
-	#client = models.ForeignKey(Client, verbose_name="Client", on_delete=models.CASCADE)
-	#quantity = models.IntegerField(verbose_name="Quantité")
-	#payedAmount = models.FloatField(verbose_name="Montant payé")
-	#sale_date = models.DateField(verbose_name="Date livre")
-	#reduction = models.FloatField(verbose_name="Montant reduction")
 
 class SaleItem(models.Model):
 	sale = models.ForeignKey(Sale, related_name='items', on_delete=models.CASCADE)
@@ -95,7 +114,10 @@ class SaleItem(models.Model):
 
 class Payment(models.Model):
 	sale = models.ForeignKey(Sale, related_name='payments', on_delete=models.CASCADE)
+	currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
+	exchange_rate = models.DecimalField(max_digits=15, decimal_places=6)
 	amount = models.DecimalField(max_digits=12, decimal_places=2)
+	amount_base = models.DecimalField(max_digits=12, decimal_places=2)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 
