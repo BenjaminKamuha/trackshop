@@ -86,9 +86,20 @@ class Sale(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 
 	@property
+	def total_cdf(self):
+		return self.total_amount_base * self.exchange_rate
+	
+	@property
+	def paid_cdf(self):
+		return self.paid_amount_base * self.exchange_rate
+	
+	@property
 	def balance(self):
 		return self.total_amount - self.paid_amount
 
+	@property 
+	def balance_cdf(self):
+		return (self.total_amount_base - self.paid_amount_base) * self.exchange_rate 
 
 	def add_payment(self, amount, currency, rate):
 		Payment.objects.create(
@@ -112,13 +123,25 @@ class SaleItem(models.Model):
 	total_price = models.DecimalField(max_digits=10, decimal_places=2)
 	paid_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
+	@property
+	def unit_price_cdf(self):
+		return self.unit_price * self.sale.exchange_rate
+	
+	@property
+	def total_price_cdf(self):
+		return self.total_price * self.sale.exchange_rate
+
+	@property
+	def paid_amount_cdf(self):
+		return self.paid_amount * self.sale.exchange_rate
+
 class Payment(models.Model):
 	sale = models.ForeignKey(Sale, related_name='payments', on_delete=models.CASCADE)
 	currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
 	exchange_rate = models.DecimalField(max_digits=15, decimal_places=6)
 	amount = models.DecimalField(max_digits=12, decimal_places=2)
 	amount_base = models.DecimalField(max_digits=12, decimal_places=2)
-	created_at = models.DateTimeField(auto_now_add=True)
+	created_at = models.DateTimeField(auto_now_add=True)           
 
 
 class ProductReturn(models.Model):

@@ -47,19 +47,30 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in sale.items.all %}
-        <tr>
-            <td>{{ item.product.name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.unit_price }}</td>
-            <td>{{ item.total_price }}</td>
-            <td>{{ item.paid_amount }}</td>
-        </tr>
-        {% endfor %}
+        {% if is_cdf %}
+            {% for item in sale.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_price_cdf|floatformat:2 }}Fc</td>
+                <td>{{ item.total_price_cdf|floatformat:2 }}Fc</td>
+                <td>{{ item.paid_amount_cdf|floatformat:2 }}Fc</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            {% for item in sale.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_price }}$</td>
+                <td>{{ item.total_price }}$</td>
+                <td>{{ item.paid_amount }}$</td>
+            </tr>
+            {% endfor %}
+        {% endif %}
     </tbody>
 </table>
-
-<h3>Total payé : {{ sale.paid_amount }}</h3>
+<h3>Total payé : {% if is_cdf %} {{ sale.paid_cdf|floatformat:2 }}Fc {% else %} {{ sale.paid_amount_base }}$ {% endif %} </h3>
 </body>
 </html>
 

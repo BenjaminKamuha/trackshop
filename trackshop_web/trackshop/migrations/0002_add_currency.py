@@ -36,10 +36,11 @@ def create_currency(apps, schema_editor):
         defaults={'rate': 2000.0, 'date': now().date()}  # Example rate, adjust as needed
     )
 
+    
     ExchangeRate.objects.get_or_create(
         from_currency=cdf_currency,
         to_currency=usd_currency,
-        defaults={'rate': 0.0004, 'date': now().date()}  # Example rate, adjust as needed
+        defaults={'rate': 2000.0, 'date': now().date()}  # Example rate, adjust as needed
     )
 
 class Migration(migrations.Migration):

@@ -48,16 +48,18 @@
             const currency2 = document.getElementById('currency_select').value;
 
             if (currency2 === 'CDF'){
-                leftover_amount.value = (product_price2 * input_quantity2) - this.value;
+                leftover_amount.value = ((product_price2 * input_quantity2) - this.value).toFixed(2);
                 if (this.value > product_price2 * input_quantity2 * document.getElementById('rate').value){
                     leftover_amount.value = 0;
+                    this.value = (product_price2 * input_quantity2 * document.getElementById('rate').value).toFixed(2);
                 }
             }
             else {
                 
-                leftover_amount.value = (product_price2 * input_quantity2) - this.value;
+                leftover_amount.value = ((product_price2 * input_quantity2) - this.value).toFixed(2);
                 if (this.value > product_price2 * input_quantity2){
-                leftover_amount.value = 0;
+                    leftover_amount.value = 0;
+                    this.value = (product_price2 * input_quantity2).toFixed(2);
                 }
             }
              
@@ -70,13 +72,15 @@
             if (currency3 === 'CDF') {
                 leftover_amount2.value = (product_price3 * input_quantity3) - this.value;
                 if (this.value > product_price3 * input_quantity3 * document.getElementById('rate').value){
-                    leftover_amount2.value = 0;
+                    leftover_amount2.value = (0).toFixed(2);
+                    this.value = (product_price3 * input_quantity3 * document.getElementById('rate').value).toFixed(2);
                 }
             }
             else {
-                leftover_amount2.value = (product_price3 * input_quantity3) - this.value;
+                leftover_amount2.value = ((product_price3 * input_quantity3) - this.value).toFixed(2);
                 if (this.value > product_price3 * input_quantity3){
-                    leftover_amount2.value = 0;
+                    leftover_amount2.value = (0).toFixed(2);
+                    this.value = (product_price3 * input_quantity3).toFixed(2);
                 }
             }  
         "><span id="currency">$</span><br>

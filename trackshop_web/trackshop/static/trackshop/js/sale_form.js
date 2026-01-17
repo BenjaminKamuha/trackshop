@@ -49,7 +49,7 @@
                 row.querySelector("input[name='productPrice']").value = (row.querySelector("input[name='productPrice']").value * rate).toFixed(2);
                 row.querySelector("input[name='paidAmount[]']").value =(row.querySelector("input[name='paidAmount[]']").value * rate).toFixed(2);
                 row.querySelector("input[name='leftOver']").value = ((row.querySelector("input[name='leftOver']").value * rate)).toFixed(2);
-                
+
                 row.querySelectorAll("span").forEach(span => {
                     span.textContent = "Fc";
                 })
@@ -57,7 +57,7 @@
         }
         else{
             document.querySelectorAll(".product-row").forEach(row => {
-                var product_price = row.querySelector("input[name='productPrice']").value;
+                var product_price = row.querySelector("input[name='productPrice']").value; 
                 var qty = row.querySelector("input[name='quantity[]']").value;
                 
                 // Changement des valeurs
@@ -72,6 +72,7 @@
         }
     })
 
+    // Cette écoute nous sert à vérifier la divise de la vente
     document.body.addEventListener("htmx:afterSwap", function (e) {
         // Vérifie que le swap concerne le container des lignes
         const currency = document.getElementById('currency_select').value;
@@ -84,6 +85,11 @@
                      // Exemple : focus automatique
                      if (!(input.name == "quantity[]")){
                         input.value = (input.value * rate).toFixed(2) ;
+                     }
+
+                     if (input.name == "quantity[]"){
+                        input.focus();
+                        input.selecte();
                      }
                 });
 

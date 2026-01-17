@@ -20,14 +20,14 @@
         {% endif %}
         <form action="{% url 'TrackShop:set-exchange-rate' %}" method="post">
             {% csrf_token %}
-            <label for="from_currency">Dollars: </label>
+            <label for="from_currency">Franc: </label>
             <select name="from_currency" id="">
-                <option value="USD">USD</option>
+                <option value="CDF">CDF</option>
             </select>
-             
+            
             <label for="to_currency: ">à</label>
             <select class="" name="to_currency" id="">
-                <option value="CDF">CDF</option>
+                <option value="USD">USD</option>
             </select><br>
 
             <label for="rate"></label>
@@ -35,7 +35,5 @@
             <button class="border rounded" type="submit">Valider</button>
         </form>
     </div>
-    
-
 {% endblock %}
 

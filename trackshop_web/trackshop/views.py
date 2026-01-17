@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Sum, F, DecimalField
 from .forms import StockForm, ProductForm, ClientForm
@@ -47,7 +48,6 @@ def set_exchange_rate(request):
 			date=now.date(),
 			defaults={"rate": rate}
 		)
-		
 		return redirect("TrackShop:dashboard")
 
 	return render(request, "trackshop/set_exchange_rate.html", {'last_rate': last_rate })
@@ -339,7 +339,7 @@ def add_payment(request, sale_id):
 		amount = Decimal(request.POST['amount'])
 		
 		currency = Currency.objects.get(code=currency_code)
-		base_currency = Currency.objects.get(code="CDF")
+		base_currency = Currency.objects.get(code="USD")
 
 		rate = (
 			ExchangeRate.objects.filter(from_currency=currency, to_currency=base_currency).latest('date').rate
@@ -359,9 +359,10 @@ def sale_invoice(request, sale_id):
 
 def sale_invoice_pdf(request, sale_id):
 	sale = get_object_or_404(Sale, pk=sale_id)
+	is_cdf = sale.currency.code == 'CDF'
 	html_string = render_to_string(
 		"trackshop/sale_invoice.html",
-		{"sale": sale}
+		{"sale": sale, 'is_cdf': is_cdf}
 	)
 
 	pdf = HTML(string=html_string).write_pdf()
@@ -372,8 +373,8 @@ def sale_invoice_pdf(request, sale_id):
 def sale_create(request, message=None):
 	
 	rate = get_today_rate(
-		from_currency=Currency.objects.get(code="USD"),
-		to_currency=Currency.objects.get(code="CDF")
+		from_currency=Currency.objects.get(code="CDF"),
+		to_currency=Currency.objects.get(code="USD")
 	)
 	
 	return render(request, "trackshop/sale_form.html", {
@@ -394,11 +395,11 @@ def sale_add_row(request):
 
 @transaction.atomic
 def sale_save(request):
-	currency_code = request.POST.get("currency")
-	print(currency_code)
-	currency = Currency.objects.get(code=currency_code)
-	print(f'currency: {currency.code}')
-	base_currency = Currency.objects.get(code="CDF")
+
+	currency_code = request.POST.get("currency") # Récuprération ddu code de la devise de la vente
+
+	currency = Currency.objects.get(code=currency_code) # Obtenir la dévide
+	base_currency = Currency.objects.get(code="USD")
 
 	rate = (
 		ExchangeRate.objects.filter(from_currency=currency, to_currency=base_currency).latest('date').rate
@@ -450,7 +451,7 @@ def sale_save(request):
 			quantity=qty,
 			unit_price=product.price,
 			total_price=line_total,
-			paid_amount=paid_amount
+			paid_amount=paid_amount/rate if currency_code=="CDF" else paid_amount
 		)
 
 		# On diminue la quantité acheté du produit
@@ -458,7 +459,7 @@ def sale_save(request):
 		product.save()
 
 
-		total += line_total
+		total += line_total * rate
 		total_paid_amount += paid_amount  
 
 
@@ -467,12 +468,14 @@ def sale_save(request):
 	# verifier si c'est une vente en crédit
 	if (total_paid_amount < total):
 		sale.is_credit = True
-	sale.total_amount = total
-	sale.total_amount_base = total * rate
+
+	sale.total_amount = total 
+	sale.total_amount_base = total / rate 
 	sale.paid_amount = total_paid_amount
-	sale.paid_amount_base = total_paid_amount * rate
+	sale.paid_amount_base = total_paid_amount / rate
 	
 	sale.save() # Enregistrement de la vente
+
 	return redirect("TrackShop:sale-invoice-pdf", sale_id=sale.id)
 
 
