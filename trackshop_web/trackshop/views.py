@@ -475,13 +475,16 @@ def create_purchase(request):
 				total_cost=line_total
 			)
 
+
+
 			# Autgmenter le stock
 			product.quantity += qty
 			product.save()
-			total += line_totalbe                         
-			total_paid_amount += amount
+			total += line_total                       
+			total_paid_amount += Decimal(amount)
 
 		purchase.total_amount = total
+		purchase.paid_amount = total_paid_amount / rate
 		purchase.save()
 
 		# Paiement
@@ -492,11 +495,11 @@ def create_purchase(request):
 
 			if payment_currency.code == "CDF":
 				amount = amount / rate
-				
+
 			ProviderPayment.objects.create(
 				purchase=purchase,
 				currency=payment_currency,
-				amount=Deciaml(paid_amount)
+				amount=Decimal(paid_amount)
 			)
 
 			purchase.paid_amount += amount 
