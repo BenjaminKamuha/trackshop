@@ -96,7 +96,7 @@ class Purchase(models.Model):
 class PurchaseItem(models.Model):
 	purchase = models.ForeignKey(Purchase, related_name="items", on_delete=models.CASCADE)
 	product = models.ForeignKey(Product, on_delete=models.PROTECT)
-	quantity = models.DecimalField(max_digits=12, decimal_places=2)
+	quantity = models.IntegerField()
 	unit_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	total_cost = models.DecimalField(max_digits=12, decimal_places=2)
 
