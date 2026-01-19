@@ -105,8 +105,8 @@ class PurchaseItem(models.Model):
 				Product: {self.product}; 
 				\nQuantité: {self.quantity}; 
 				\nPrix unitaire: {self.unit_cost}; 
-				\nTotal payé: {self.total_amount}
-				
+				\nTotal payé: {self.total_cost}
+
 				'''
 
 # Suivi des payments du fournisseur
