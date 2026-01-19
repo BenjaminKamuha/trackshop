@@ -27,19 +27,20 @@
         <label for="paid_amount">Montant payé : </label><input id="paid_amount" type="number" step="0.01" name="paidAmount[]" min="0" placeholder="0.00" value="0.00" 
         onkeyup="
             const row4 = this.closest('.product-row');
-            row4.querySelector('#leftover_amount').value = ((row4.querySelector('#product_price').value * row4.querySelector('#quantity').value) - this.value).toFixed(2);
-
             if (this.value > (row4.querySelector('#product_price').value * row4.querySelector('#quantity').value)){
                 this.value = (row4.querySelector('#product_price').value * row4.querySelector('#quantity').value).toFixed(2);
             }
+            row4.querySelector('#leftover_amount').value = ((row4.querySelector('#product_price').value * row4.querySelector('#quantity').value) - this.value).toFixed(2);
         "
         onchange="
-            const row5 = this.closest('.product-row');
+            const row5 = this.closest('.product-row');            
+            if (this.value > (row5.querySelector('#product_price').value * row5.querySelector('#quantity').value)){
+                this.value = (row5.querySelector('#product_price').value * row5.querySelector('#quantity').value).toFixed(2);
+            }
             row5.querySelector('#leftover_amount').value = ((row5.querySelector('#product_price').value * row5.querySelector('#quantity').value) - this.value).toFixed(2);
         "
         ><span id="currency">$</span><br>
         <label for="leftover_amount">Montant restant : </label><input id="leftover_amount" type="number" name="leftOver" step="0.01" min="0" value="0" readonly><span id="currency">$</span>
         <input type="hidden" name="product_id[]" value="{{ product.pk }}"> <br><br>
-
 </div>
 

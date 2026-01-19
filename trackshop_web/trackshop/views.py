@@ -426,8 +426,8 @@ def sale_add_row(request):
 
 @transaction.atomic
 def create_purchase(request):
-	
-	exchange_rate = get_today_rate(
+
+	rate = get_today_rate(
 		from_currency=Currency.objects.get(code="CDF"),
 		to_currency=Currency.objects.get(code="USD")
 	)
@@ -435,23 +435,33 @@ def create_purchase(request):
 	if request.method == "POST":
 		provider = Provider.objects.get(id=request.POST["provider_id"])
 		#exchange_rate =  Decimal(request.POST["exchange_rate"])
-		currency = Currency.objects.get(code="USD")
+
+		currency_code = request.POST.get("currency") # Récuprération ddu code de la devise de la vente
+		currency = Currency.objects.get(code=currency_code) # Obtenir la dévide
+		base_currency = Currency.objects.get(code="USD")
+
+		rate = (
+			ExchangeRate.objects.filter(from_currency=currency, to_currency=base_currency).latest('date').rate
+		)
 
 		purchase = Purchase.objects.create(
 			provider=provider,
 			currency=currency,
-			exchange_rate=exchange_rate,
+			exchange_rate=rate,
 			total_amount=0,
 			paid_amount=0
 		)
 
 		total = Decimal(0)
+		total_paid_amount = Decimal(0)
 
 		product_ids = request.POST.getlist("product_id[]")
 		quantities = request.POST.getlist("quantity[]")
 		unit_costs = request.POST.getlist("unit_cost[]")
+		paid_amounts = request.POST.getlist("paidAmount[]")	# Récupération des différentes montants payés
 
-		for pid, qty, cost in zip(product_ids, quantities, unit_costs):
+
+		for pid, qty, cost, amount in zip(product_ids, quantities, unit_costs, paid_amounts):
 			product = Product.objects.get(id=pid)
 			qty = int(qty)
 			cost = Decimal(cost)
@@ -468,10 +478,10 @@ def create_purchase(request):
 			# Autgmenter le stock
 			product.quantity += qty
 			product.save()
+			total += line_totalbe                         
+			total_paid_amount += amount
 
-			total += line_total 
-		
-		purchase.total_amount = total 
+		purchase.total_amount = total
 		purchase.save()
 
 		# Paiement
@@ -481,8 +491,8 @@ def create_purchase(request):
 			amount = Decimal(paid_amount)
 
 			if payment_currency.code == "CDF":
-				amount = amount / exchange_rate
-
+				amount = amount / rate
+				
 			ProviderPayment.objects.create(
 				purchase=purchase,
 				currency=payment_currency,
@@ -495,7 +505,7 @@ def create_purchase(request):
 		return redirect("TrackShop:purchase-detail", purchase.id) 
 
 	return render(request, "trackshop/purchase_form.html", {
-		'rate': exchange_rate,
+		'rate': rate,
 		'providers': Provider.objects.all(),
 		'products': Product.objects.all(),
 	
