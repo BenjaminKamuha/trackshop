@@ -100,6 +100,15 @@ class PurchaseItem(models.Model):
 	unit_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 	total_cost = models.DecimalField(max_digits=12, decimal_places=2)
 
+	def __str__(self):
+		return f'''
+				Product: {self.product}; 
+				\nQuantité: {self.quantity}; 
+				\nPrix unitaire: {self.unit_cost}; 
+				\nTotal payé: {self.total_amount}
+				
+				'''
+
 # Suivi des payments du fournisseur
 class ProviderPayment(models.Model):
 	purchase = models.ForeignKey(Purchase, related_name="payments", on_delete=models.CASCADE)
