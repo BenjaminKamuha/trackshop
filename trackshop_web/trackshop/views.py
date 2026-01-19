@@ -21,6 +21,11 @@ from .models import (
 	InventorySummary,
 	Currency,
 	ExchangeRate,
+	Provider,
+	Purchase,
+	PurchaseItem,
+	ProviderPayment,
+
 	)
 
 from django.template.loader import render_to_string
@@ -48,7 +53,8 @@ def set_exchange_rate(request):
 			date=now.date(),
 			defaults={"rate": rate}
 		)
-		return redirect("TrackShop:dashboard")
+		print("Taux enregistré")
+		return redirect ("TrackShop:dashboard")
 
 	return render(request, "trackshop/set_exchange_rate.html", {'last_rate': last_rate })
 
@@ -352,6 +358,31 @@ def add_payment(request, sale_id):
 	return render(request, "trackshop/add_payment.html", {"sale": sale})
 
 
+def add_provider_payment(purchase, amount, currency):
+	if currency.code != purchase.currency.code:
+		amount = amount / purchase.exchange_rate 
+
+	purchase.paid_amount += amount
+	purchase.save()
+
+def provider_payment(request, purchase_pk):
+	
+	purchase = get_object_or_404(Purchase, pk=purchase_pk)
+	if request.method == "POST":
+		amount = request.POST['amount']
+		currency_code = request.POST['currency_code']
+
+		currency = Currency.objects.get(code=currency_code)
+		
+		add_provider_payment(purchase, Decimal(amount), currency)
+
+		return redirect("TrackShop:payment-success")
+	return render(request, "trackshop/provider_payment.html", {'purchase':purchase})
+
+def payment_succes(request):
+	return render(request, "trackshop/payment_success.html")
+
+
 def sale_invoice(request, sale_id):
 	sale = Sale.objects.get(pk=sale_id)
 	return render(request, "trackshop/sale_invoice.html", {"sale": sale})
@@ -391,7 +422,91 @@ def sale_add_row(request):
 
 	return render(request, "trackshop/partials/sale/sale_row.html", {
 		"products": products
+	})  
+
+@transaction.atomic
+def create_purchase(request):
+	
+	exchange_rate = get_today_rate(
+		from_currency=Currency.objects.get(code="CDF"),
+		to_currency=Currency.objects.get(code="USD")
+	)
+
+	if request.method == "POST":
+		provider = Provider.objects.get(id=request.POST["provider_id"])
+		#exchange_rate =  Decimal(request.POST["exchange_rate"])
+		currency = Currency.objects.get(code="USD")
+
+		purchase = Purchase.objects.create(
+			provider=provider,
+			currency=currency,
+			exchange_rate=exchange_rate,
+			total_amount=0,
+			paid_amount=0
+		)
+
+		total = Decimal(0)
+
+		product_ids = request.POST.getlist("product_id[]")
+		quantities = request.POST.getlist("quantity[]")
+		unit_costs = request.POST.getlist("unit_cost[]")
+
+		for pid, qty, cost in zip(product_ids, quantities, unit_costs):
+			product = Product.objects.get(id=pid)
+			qty = int(qty)
+			cost = Decimal(cost)
+			line_total = qty * cost 
+
+			PurchaseItem.objects.create(
+				purchase=purchase,
+				product=product,
+				quantity=qty,
+				unit_cost=cost,
+				total_cost=line_total
+			)
+
+			# Autgmenter le stock
+			product.quantity += qty
+			product.save()
+
+			total += line_total 
+		
+		purchase.total_amount = total 
+		purchase.save()
+
+		# Paiement
+		paid_amount = request.POST.get("paid_amount")
+		if paid_amount:
+			payment_currency = Currency.objeccts.get(code=request.POST["payment_currency"])
+			amount = Decimal(paid_amount)
+
+			if payment_currency.code == "CDF":
+				amount = amount / exchange_rate
+
+			ProviderPayment.objects.create(
+				purchase=purchase,
+				currency=payment_currency,
+				amount=Deciaml(paid_amount)
+			)
+
+			purchase.paid_amount += amount 
+			purchase.save()
+		
+		return redirect("TrackShop:purchase-detail", purchase.id) 
+
+	return render(request, "trackshop/purchase_form.html", {
+		'rate': exchange_rate,
+		'providers': Provider.objects.all(),
+		'products': Product.objects.all(),
+	
 	})
+
+
+def purchase_detail(request, purchase_pk):
+
+	purchase = get_object_or_404(Purchase, pk=purchase_pk)
+	return render(request, "trackshop/purchase_detail.html", {"purchase": purchase})
+
 
 @transaction.atomic
 def sale_save(request):
@@ -510,24 +625,42 @@ def search_client(request):
 	clients = Client.objects.filter(complete_name__icontains=search_input)[:10]
 
 	return render(request, 'trackshop/partials/sale/client_result.html', {
-		'clients': clients
+		'clients': clients,
 	})
 
 def search_product(request):
     q = request.GET.get("product_search", "")
     products = Product.objects.filter(name__icontains=q, stock__gt=0)
     return render(request, "trackshop/partials/sale/product_results.html", {
-        "products": products
+        "products": products,
     })
+
+def search_provider(request):
+	search_input = request.GET.get('provider_search')
+	providers = Provider.objects.filter(name__icontains=search_input)[:10]
+	return render(request, "trackshop/partials/purchase/provider_results.html", {
+		"providers": providers,
+	})
 
 def select_product(request, product_pk):
 	selected_ids = request.POST.getlist("prod_selected[]")
+	from_request = request.POST.get('from_request')
 	print(selected_ids)
 	product = Product.objects.get(pk=product_pk)
 
 	excluded_ids = [int(pid) for pid in selected_ids if pid.isdigit()]
 
-	return render(request, "trackshop/partials/sale/sale_row_selected.html", {
-        "product": product,
-		"nb_product": len(excluded_ids),
-    })
+	if from_request == "sale_form":
+		return render(request, "trackshop/partials/sale/sale_row_selected.html", {
+        	"product": product,
+			"nb_product": len(excluded_ids),
+    	})
+	elif from_request == "purchase_form":
+
+		return render(request, "trackshop/partials/purchase/purchase_row_selected.html", {
+			"product": product,
+			"nb_product": len(excluded_ids)
+		})
+	
+	return HttpResponse("Error")
+

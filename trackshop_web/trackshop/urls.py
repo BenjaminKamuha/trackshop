@@ -37,4 +37,11 @@ urlpatterns = [
 	path('sale/search_product/', views.search_product, name="search-product"),
 	path('sale/results/select_product/<int:product_pk>/', views.select_product, name="select-product"),
 	path('sale/add_payment/<int:sale_id>', views.add_payment, name="add-payment"),
+	path('purchase/', views.create_purchase, name="create-purchase"),
+	path('purchase/detail/<int:purchase_pk>/', views.purchase_detail, name='purchase-detail'),
+	path('purchase/add_payment/<int:purchase_pk>/', views.provider_payment, name='provider-payment'),
+	path('purchase/add_payment/success/', views.payment_succes, name='payment-success'),
+	path('purchase/search_provider/', views.search_provider, name='search-provider'),
+
+
 ]

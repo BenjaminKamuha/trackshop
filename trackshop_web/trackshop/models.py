@@ -56,17 +56,51 @@ class ExchangeRate(models.Model):
 	class Meta:
 		unique_together = ('from_currency', 'to_currency', 'date')
 
+
 class Product(models.Model):
 	stock = models.ForeignKey(Stock, verbose_name="Stock", related_name="products", on_delete=models.CASCADE)
 	name = models.CharField(max_length=20)
 	price = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Prix Produit")
-	currency = models.CharField(max_length=5, verbose_name="Dévise", choices=CURRENCY_CHOICES, null=True, blank=True)
 	quantity = models.PositiveIntegerField()
-	dateAdded = models.DateTimeField(auto_now=True)
+	date_added = models.DateTimeField(auto_now=True)
 	is_active = models.BooleanField(default=True)
 	
 	def __str__(self):
 		return self.name
+
+# La tables du fournisseur
+class Provider(models.Model):
+	name = models.CharField(max_length=20)
+	
+	def __str__(self):
+		return self.name
+
+# Table de gestion des achat (arrivage)
+class Purchase(models.Model):
+	provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+	currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
+	exchange_rate = models.DecimalField(max_digits=15, decimal_places=6, verbose_name="CDF pour 1 USD")
+	total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	@property
+	def balance(self):
+		return self.total_amount - self.paid_amount
+
+# Les items de l'arrivage
+class PurchaseItem(models.Model):
+	purchase = models.ForeignKey(Purchase, related_name="items", on_delete=models.CASCADE)
+	product = models.ForeignKey(Product, on_delete=models.PROTECT)
+	quantity = models.DecimalField(max_digits=12, decimal_places=2)
+	total_cost = models.DecimalField(max_digits=12, decimal_places=2)
+
+# Suivi des payments du fournisseur
+class ProviderPayment(models.Model):
+	purchase = models.ForeignKey(Purchase, related_name="payments", on_delete=models.CASCADE)
+	currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
+	amount = models.DecimalField(max_digits=12, decimal_places=2)
+	created_at = models.DateTimeField(auto_now_add=True)
 
 class CashBook(models.Model):
 	income = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="recette")
@@ -156,10 +190,6 @@ class Invoice(models.Model):
 	nbProduct = models.PositiveIntegerField(verbose_name="Nombre de produit")
 	totalPrice = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Prix total")
 	totalPaid = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Total payé")
- 
-
-class Provider(models.Model):
-	name = models.CharField(max_length=20)
 
 
 class ClientDebt(models.Model):

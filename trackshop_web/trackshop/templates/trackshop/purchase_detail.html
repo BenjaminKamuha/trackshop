@@ -1,0 +1,9 @@
+<p>Purchase_detail</p>
+
+L'achat de : <br>
+
+{% for item in purchase.items.all %}
+    {{ item }}
+{% endfor %}
+
+<br>  a réussi

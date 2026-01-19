@@ -12,6 +12,7 @@ class ExchangeRateRequiredMiddleware:
     """
     PROTECTED_PATHS = [
         '/dashboard/',
+        '/sale/new/'
         '/payment/',
     ]
 
@@ -26,7 +27,7 @@ class ExchangeRateRequiredMiddleware:
             return self.get_response(request)
 
         if any(request.path.startswith(p) for p in self.PROTECTED_PATHS):
-            base_currency = Currency.objects.get(code='CDF')
+            base_currency = Currency.objects.get(code='USD')
 
             rates_exist = ExchangeRate.objects.filter(
                 to_currency=base_currency, 
