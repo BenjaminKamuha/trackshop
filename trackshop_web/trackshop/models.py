@@ -104,8 +104,8 @@ class PurchaseItem(models.Model):
 		return f'''
 				Product: {self.product}; 
 				\nQuantité: {self.quantity}; 
-				\nPrix unitaire: {self.unit_cost}; 
-				\nTotal payé: {self.total_cost}
+				\nPrix unitaire: {self.unit_cost} {self.purchase.currency.code}; 
+				\nTotal payé: {self.total_cost} {self.purchase.currency.code}
 
 				'''
 
