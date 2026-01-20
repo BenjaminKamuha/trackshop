@@ -3,7 +3,7 @@
     {% for prod in stock.products.all %}   
         <p><a href="" hx-get="{% url 'TrackShop:product_details' prod.pk %}" hx-target="#product_details" hx-trigger="click" hx-swap="innerHTML">{{ prod }}</a></p>
     {% endfor %}
-    <a href="{% url 'TrackShop:new_product' stock.pk %}">Nouveau produit</a>
+    <a href="" hx-get="{% url 'TrackShop:new_product' stock.pk %}" hx-target="#form" hx-trigger="click">Nouveau produit</a>
 {% else %}
     {% if stock %}
         <p>Aucun produit trouvé pour {{ stock }}</p>

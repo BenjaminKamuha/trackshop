@@ -1,0 +1,7 @@
+<form action="{% url 'TrackShop:new-provider' %}" method="POST">
+    {% csrf_token %}
+    <label for="name">Nom du fournisseur: </label><br>
+    <input type="text" id="name" name="provider_name"><br>
+    <input type="hidden" value="purchase" name="from_request">
+    <button type="submit">Ajouter le fournisseur</button>
+</form>

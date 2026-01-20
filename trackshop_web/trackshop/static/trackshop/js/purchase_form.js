@@ -26,11 +26,11 @@
         const currency = document.getElementById('currency_select').value;
         if (currency === 'CDF') {
             document.querySelectorAll(".product-row").forEach(row => {
-                var product_price = row.querySelector("input[name='productPrice']").value;
-                var qty = row.querySelector("input[name='quantity[]']").value;
+                //var product_price = row.querySelector("input[name='productPrice']").value;
+                //var qty = row.querySelector("input[name='quantity[]']").value;
                 
                 // Changement des valeurs
-                row.querySelector("input[name='productPrice']").value = (row.querySelector("input[name='productPrice']").value * rate).toFixed(2);
+                row.querySelector("input[name='unit_cost[]']").value = (row.querySelector("input[name='unit_cost[]']").value * rate).toFixed(2);
                 row.querySelector("input[name='paidAmount[]']").value =(row.querySelector("input[name='paidAmount[]']").value * rate).toFixed(2);
                 row.querySelector("input[name='leftOver']").value = ((row.querySelector("input[name='leftOver']").value * rate)).toFixed(2);
 
@@ -41,11 +41,11 @@
         }
         else{
             document.querySelectorAll(".product-row").forEach(row => {
-                var product_price = row.querySelector("input[name='productPrice']").value; 
-                var qty = row.querySelector("input[name='quantity[]']").value;
+                //var product_price = row.querySelector("input[name='productPrice']").value; 
+                //var qty = row.querySelector("input[name='quantity[]']").value;
                 
                 // Changement des valeurs
-                row.querySelector("input[name='productPrice']").value = (row.querySelector("input[name='productPrice']").value / rate).toFixed(2);
+                row.querySelector("input[name='unit_cost[]']").value = (row.querySelector("input[name='unit_cost[]']").value / rate).toFixed(2);
                 row.querySelector("input[name='paidAmount[]']").value = (row.querySelector("input[name='paidAmount[]']").value /rate).toFixed(2);
                 row.querySelector("input[name='leftOver']").value = ((row.querySelector("input[name='leftOver']").value / rate)).toFixed(2);
 

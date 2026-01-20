@@ -77,6 +77,7 @@ def dashboard(request):
 	debts = ClientDebt.objects.all()
 	todaySales = Sale.objects.filter(created_at=today)
 	todaySpending = Spending.objects.filter(date=today)
+	providers = Provider.objects.all()
 	
 	return render(request, "trackshop/dashboard.html", context={
 		"stocks": stocks,
@@ -84,6 +85,7 @@ def dashboard(request):
 		"debts": debts,
 		"todaySales": todaySales,
 		"todaySpending": todaySpending,
+		"providers": providers
 		})
 
 def new_stock(request):
@@ -111,8 +113,15 @@ def new_stock(request):
 def new_client(request):
 	source = request.GET.get("from")
 	if request.method == "POST":
+		
 		source = request.POST.get("from")
-		print(f'from {source}')
+		if source == "sale":
+			Client.objects.create(
+				complete_name=request.POST.get('client_name')
+			)
+			return redirect("TrackShop:sale-create")
+
+		source = request.POST.get("from")
 		client_form = ClientForm(request.POST)
 		if client_form.is_valid():
 			client_form.save()
@@ -125,6 +134,22 @@ def new_client(request):
 
 	client_form = ClientForm()
 	return render(request, "trackshop/new_client.html", context={"client_form": client_form, "source": source})
+
+def new_provider(request):
+	if request.method == "POST":	
+		name = request.POST.get('provider_name')
+		from_request = request.POST.get('from_request')
+		Provider.objects.create(
+			name=name
+		)
+
+		if from_request == "purchase":
+			return redirect('TrackShop:create-purchase')
+		else:
+			return redirect('TrackShop:dashboard')
+		
+	return render(request, 'trackshop/partials/purchase/new_provider.html')
+	
 
 def client(request):
 	clients = Client.objects.all()
@@ -331,7 +356,7 @@ def new_inventory_view(request):
 def load_inventory(request, inv_pk):
 	inventory = get_object_or_404(Inventory, pk=inv_pk)
 	return render(request, "trackshop/partials/inventory/inventory_view.html", {'inventory':inventory})
-			
+	
 		
 def history(request):
 	sales = Sale.objects.all().order_by("-created_at")
@@ -370,10 +395,9 @@ def provider_payment(request, purchase_pk):
 	purchase = get_object_or_404(Purchase, pk=purchase_pk)
 	if request.method == "POST":
 		amount = request.POST['amount']
-		currency_code = request.POST['currency_code']
+		currency_code = request.POST['currency']
 
 		currency = Currency.objects.get(code=currency_code)
-		
 		add_provider_payment(purchase, Decimal(amount), currency)
 
 		return redirect("TrackShop:payment-success")
@@ -483,28 +507,11 @@ def create_purchase(request):
 			total += line_total                       
 			total_paid_amount += Decimal(amount)
 
-		purchase.total_amount = total
+		purchase.total_amount = total / rate
 		purchase.paid_amount = total_paid_amount / rate
+		purchase.is_credit = total_paid_amount < total
 		purchase.save()
 
-		# Paiement
-		paid_amount = request.POST.get("paid_amount")
-		if paid_amount:
-			payment_currency = Currency.objeccts.get(code=request.POST["payment_currency"])
-			amount = Decimal(paid_amount)
-
-			if payment_currency.code == "CDF":
-				amount = amount / rate
-
-			ProviderPayment.objects.create(
-				purchase=purchase,
-				currency=payment_currency,
-				amount=Decimal(paid_amount)
-			)
-
-			purchase.paid_amount += amount 
-			purchase.save()
-		
 		return redirect("TrackShop:purchase-detail", purchase.id) 
 
 	return render(request, "trackshop/purchase_form.html", {
@@ -636,9 +643,9 @@ def save_return(request, item_pk):
 def search_client(request):
 	search_input = request.GET.get('client_search', '')
 	clients = Client.objects.filter(complete_name__icontains=search_input)[:10]
-
 	return render(request, 'trackshop/partials/sale/client_result.html', {
 		'clients': clients,
+		'search_input': search_input,
 	})
 
 def search_product(request):
@@ -653,6 +660,7 @@ def search_provider(request):
 	providers = Provider.objects.filter(name__icontains=search_input)[:10]
 	return render(request, "trackshop/partials/purchase/provider_results.html", {
 		"providers": providers,
+		"search_input": search_input,
 	})
 
 def select_product(request, product_pk):

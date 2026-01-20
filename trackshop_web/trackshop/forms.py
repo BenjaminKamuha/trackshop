@@ -29,20 +29,16 @@ class ClientForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product 
-        fields = ["name", "price", "quantity"]
+        fields = ["name", "price"]
 
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get("name")
         price = cleaned_data.get("price")
-        quantity = cleaned_data.get("quantity")
 
         if len(name) < 3:
             raise forms.ValidationError("Le nom est trop court")
 
         elif price < 0:
             raise forms.ValidationError("Le prix est invalide")
-
-        elif quantity < 0: 
-            raise forms.ValidationError("La quantité est invalide")
 

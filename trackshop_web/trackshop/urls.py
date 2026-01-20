@@ -9,6 +9,7 @@ urlpatterns = [
 	path('dashboard/', views.dashboard, name='dashboard'),
 	path('new_stock/', views.new_stock, name='new_stock'),
 	path('new_client/', views.new_client, name='new_client'),
+	path('new_provider/', views.new_provider, name='new-provider'),
 	path('client/', views.client, name="client"),
 	path('client/<int:client_pk>', views.load_client_sub_menu, name="client_sub_menu"),
 	path('client/<int:client_pk>/general', views.client_general_info, name="client_general_info"),

@@ -22,7 +22,7 @@
         <form>
             {% csrf_token %}
             {% for p in products %}
-                <div class="block"
+                <div class="box"
                     hx-post="{% url 'TrackShop:select-product' p.pk %}"
                     hx-target="#purchase-items"
                     hx-trigger="click"
@@ -56,10 +56,15 @@
             </div>
             <div id="provider_result" style="margin-bottom: 30px;">
                 <div style="display: flex;">
-                    {% for p in providers %}
-                            <label for="provider{{ p.id }}" style="border: 2px solid rgb(223, 93, 7); height: 50px; margin-left: 10px;">{{ p.name }}</label>
-                            <input id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
-                    {% endfor %}
+                    {% if providers.exists %}
+                        {% for p in providers %}
+                                <label for="provider{{ p.id }}" style="border: 2px solid rgb(223, 93, 7); height: 50px; margin-left: 10px;">{{ p.name }}</label>
+                                <input id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
+                        {% endfor %}
+                    {% else %}
+                        Aucun fournisseur trouvé, 
+                        <a class="text-blue-500" href="" hx-get="{% url 'TrackShop:new-provider' %}" hx-target="#form" hx-trigger="click">Ajouter un fournisseur</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -72,7 +77,6 @@
             <label for="" class="ml-10">Taux du jours</label>
             <input type="number" step="0.0001" name="rate" id="rate" value="{{ rate }}" readonly>
         </div>
-
         <!-- Produits -->
 
         <div id="purchase-items" style="width: 60%;">
@@ -90,4 +94,4 @@
 
 {% block scripts %}
     <script src="{% static 'trackshop/js/purchase_form.js' %}"></script>
-{% endblock %}
+{% endblock %}  

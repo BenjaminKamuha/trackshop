@@ -1,6 +1,28 @@
 <div style="display: flex;">
-    {% for c in clients %}
-    <label for="client{{ c.id }}" style="border: 2px solid blue; height: 50px; margin-left: 10px;">{{ c.complete_name }}</label>
-    <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required onchange="document.getElementById('client_error').remove()">
-    {% endfor %}
+    {% if clients %}
+        {% for c in clients %}
+            <label for="client{{ c.id }}" style="border: 2px solid blue; height: 50px; margin-left: 10px;">{{ c.complete_name }}</label>
+            <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required onchange="document.getElementById('client_error').remove()">
+        {% endfor %}
+    {% else %}
+        <span>Ce client n'est pas enregistré</span>
+        <form action="{% url 'TrackShop:new_client' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" id="name" value="{{ search_input }}" name="client_name"><br>
+            <input type="hidden" value="sale" name="from">
+            <button type="submit">Ajouter</button>
+        </form>
+    {% endif %}
 </div>
+
+
+
+
+    {% if providers %}    
+        {% for p in providers %}
+            <label for="provider{{ p.id }}" style="border: 2px solid rgb(233, 95, 15); height: 50px; margin-left: 10px;">{{ p.name }}</label>
+            <input id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
+        {% endfor %}
+    {% else %}
+
+    {% endif %}
