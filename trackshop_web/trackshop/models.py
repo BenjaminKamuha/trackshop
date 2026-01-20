@@ -94,6 +94,19 @@ class Purchase(models.Model):
 	def __str__(self):
 		return f'Achant effectué chez {self.provider}'
 
+	def add_provider_payment(self, amount, currency):
+
+		ProviderPayment.objects.create(
+			purchase=self,
+			currency=currency,
+			amount=amount,
+			amount_base=amount / self.exchange_rate
+		)
+
+		purchase.paid_amount += amount
+		purchase.paid_amount_base = amount / purchase.exchange_rate
+		purchase.save()
+
 # Les items de l'arrivage
 class PurchaseItem(models.Model):
 	purchase = models.ForeignKey(Purchase, related_name="items", on_delete=models.CASCADE)
