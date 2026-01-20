@@ -94,18 +94,19 @@ class Purchase(models.Model):
 	def __str__(self):
 		return f'Achant effectué chez {self.provider}'
 
-	def add_provider_payment(self, amount, currency):
+	def add_provider_payment(self, amount, currency, rate):
 
 		ProviderPayment.objects.create(
 			purchase=self,
 			currency=currency,
 			amount=amount,
-			amount_base=amount / self.exchange_rate
+			amount_base=amount / rate
 		)
 
-		purchase.paid_amount += amount
-		purchase.paid_amount_base = amount / purchase.exchange_rate
-		purchase.save()
+		self.paid_amount += amount
+		self.paid_amount_base = amount / rate
+		self.is_credit = self.balance > 0
+		self.save()
 
 # Les items de l'arrivage
 class PurchaseItem(models.Model):
