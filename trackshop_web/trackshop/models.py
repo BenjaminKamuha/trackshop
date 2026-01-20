@@ -176,7 +176,8 @@ class Sale(models.Model):
 			amount=amount,
 			amount_base=amount / rate
 		)
-		
+		if currency.code != self.currency.code:
+			amount = amount / rate
 		self.paid_amount += amount
 		self.paid_amount_base += amount / rate
 		self.is_credit = self.balance > 0

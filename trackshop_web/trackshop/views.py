@@ -365,6 +365,11 @@ def history(request):
 
 def add_payment(request, sale_id):
 	sale = get_object_or_404(Sale, pk=sale_id)
+	rate = get_today_rate(
+		from_currency=Currency.objects.get(code="CDF"),
+		to_currency=Currency.objects.get(code="USD")
+	)
+
 	if request.method == 'POST':
 		currency_code = request.POST.get("currency")
 		amount = Decimal(request.POST['amount'])
@@ -376,11 +381,16 @@ def add_payment(request, sale_id):
 			ExchangeRate.objects.filter(from_currency=currency, to_currency=base_currency).latest('date').rate
 		)
 
-		sale.add_payment(Decimal(amount), currency, rate) 
+		amount = Decimal(amount)
+
+		sale.add_payment(amount, currency, rate) 
 
 		return render(request, "trackshop/partials/sale/payment_succes.html",  {"sale": sale} )
 
-	return render(request, "trackshop/add_payment.html", {"sale": sale})
+	return render(request, "trackshop/add_payment.html", {
+		"sale": sale,
+		"rate": rate
+	})
 
 
 def provider_payment(request, purchase_pk):
