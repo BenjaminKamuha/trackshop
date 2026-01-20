@@ -385,15 +385,29 @@ def add_payment(request, sale_id):
 
 def provider_payment(request, purchase_pk):
 	purchase = get_object_or_404(Purchase, pk=purchase_pk)
+	
+	rate = get_today_rate(
+		from_currency=Currency.objects.get(code="CDF"),
+		to_currency=Currency.objects.get(code="USD")
+		)
+		
 	if request.method == "POST":
-		amount = request.POST['amount']
-		currency_code = request.POST['currency']
-
+		amount = request.POST.get('amount')
+		currency_code = request.POST.get('currency')
 		currency = Currency.objects.get(code=currency_code)
-		purchase.add_provider_payment(Decimal(amount), currency)
+		base_currency = Currency.objects.get(code="USD")
 
+		rate = (
+			ExchangeRate.objects.filter(from_currency=currency, to_currency=base_currency).latest('date').rate
+		)
+
+		amount = Decimal(amount)
+		purchase.add_provider_payment(amount, currency, rate)
 		return redirect("TrackShop:payment-success")
-	return render(request, "trackshop/provider_payment.html", {'purchase':purchase})
+	return render(request, "trackshop/provider_payment.html", {
+		'purchase':purchase,
+		'rate': rate	
+	})
 
 def payment_succes(request):
 	return render(request, "trackshop/payment_success.html")
@@ -464,7 +478,9 @@ def create_purchase(request):
 			currency=currency,
 			exchange_rate=rate,
 			total_amount=0,
-			paid_amount=0
+			total_amount_base=0,
+			paid_amount=0,
+			paid_amount_base=0,
 		)
 
 		total = Decimal(0)
@@ -490,8 +506,6 @@ def create_purchase(request):
 				total_cost=line_total
 			)
 
-
-
 			# Autgmenter le stock
 			product.quantity += qty
 			product.save()
@@ -511,7 +525,6 @@ def create_purchase(request):
 		'rate': rate,
 		'providers': Provider.objects.all(),
 		'products': Product.objects.all(),
-	
 	})
 
 
@@ -519,7 +532,6 @@ def purchase_detail(request, purchase_pk):
 
 	purchase = get_object_or_404(Purchase, pk=purchase_pk)
 	return render(request, "trackshop/purchase_detail.html", {"purchase": purchase})
-
 
 @transaction.atomic
 def sale_save(request):

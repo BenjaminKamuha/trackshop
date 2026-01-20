@@ -103,6 +103,9 @@ class Purchase(models.Model):
 			amount_base=amount / rate
 		)
 
+		if currency.code != self.currency.code:
+			amount = amount / rate
+
 		self.paid_amount += amount
 		self.paid_amount_base = amount / rate
 		self.is_credit = self.balance > 0
@@ -121,7 +124,7 @@ class PurchaseItem(models.Model):
 				Product: {self.product}; 
 				\nQuantité: {self.quantity}; 
 				\nPrix unitaire: {self.unit_cost} {self.purchase.currency.code}; 
-				\nTotal payé: {self.total_cost} {self.purchase.currency.code}
+				\nPrix total: {self.total_cost} {self.purchase.currency.code}
 				'''
 
 # Suivi des payments du fournisseur
@@ -173,6 +176,7 @@ class Sale(models.Model):
 			amount=amount,
 			amount_base=amount / rate
 		)
+		
 		self.paid_amount += amount
 		self.paid_amount_base += amount / rate
 		self.is_credit = self.balance > 0
