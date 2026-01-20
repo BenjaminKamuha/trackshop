@@ -376,36 +376,27 @@ def add_payment(request, sale_id):
 			ExchangeRate.objects.filter(from_currency=currency, to_currency=base_currency).latest('date').rate
 		)
 
-		sale.add_payment(Decimal(amount, currency, rate)) 
+		sale.add_payment(Decimal(amount), currency, rate) 
 
 		return render(request, "trackshop/partials/sale/payment_succes.html",  {"sale": sale} )
 
 	return render(request, "trackshop/add_payment.html", {"sale": sale})
 
 
-def add_provider_payment(purchase, amount, currency):
-	if currency.code != purchase.currency.code:
-		amount = amount / purchase.exchange_rate 
-
-	purchase.paid_amount += amount
-	purchase.save()
-
 def provider_payment(request, purchase_pk):
-	
 	purchase = get_object_or_404(Purchase, pk=purchase_pk)
 	if request.method == "POST":
 		amount = request.POST['amount']
 		currency_code = request.POST['currency']
 
 		currency = Currency.objects.get(code=currency_code)
-		add_provider_payment(purchase, Decimal(amount), currency)
+		purchase.add_provider_payment(Decimal(amount), currency)
 
 		return redirect("TrackShop:payment-success")
 	return render(request, "trackshop/provider_payment.html", {'purchase':purchase})
 
 def payment_succes(request):
 	return render(request, "trackshop/payment_success.html")
-
 
 def sale_invoice(request, sale_id):
 	sale = Sale.objects.get(pk=sale_id)
@@ -507,8 +498,10 @@ def create_purchase(request):
 			total += line_total                       
 			total_paid_amount += Decimal(amount)
 
-		purchase.total_amount = total / rate
-		purchase.paid_amount = total_paid_amount / rate
+		purchase.total_amount = total
+		purchase.total_amount_base = total / rate
+		purchase.paid_amount = total_paid_amount
+		purchase.paid_amount_base = total_paid_amount / rate
 		purchase.is_credit = total_paid_amount < total
 		purchase.save()
 
