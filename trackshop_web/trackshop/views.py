@@ -376,7 +376,7 @@ def create_inventory(start_date, end_date, inv_type):
 	inventory = Inventory.objects.create(
 		start_date=start_date,
 		end_date=end_date,
-		inventory_type=inv_type
+		inventory_type=inv_type,
 	)
 
 	# Génération des lignes
@@ -427,7 +427,6 @@ def create_inventory(start_date, end_date, inv_type):
 			)
 		)['total'] or Decimal('0')
 	)
-
 	# Résumé final
 	InventorySummary.objects.create(
 		inventory=inventory,
@@ -445,8 +444,8 @@ def create_inventory(start_date, end_date, inv_type):
 
 def inventory(request):
 	inventories = Inventory.objects.all()
-	last_created = Inventory.objects.all().last()
-	return render(request, "trackshop/inventory.html", context={"last_created": last_created, "inventories": inventories})
+	last_access__inventory = Inventory.objects.order_by("-last_access_date").first()
+	return render(request, "trackshop/inventory.html", context={"inventory": last_access__inventory, "inventories": inventories})
 
 def new_inventory_view(request):
 	if request.method == "POST":
@@ -456,6 +455,7 @@ def new_inventory_view(request):
 
 		# Création de l'inventaire
 		create_inventory(start_date, end_date, inventory_type)
+		
 		return redirect('TrackShop:inventory')
 
 	return render(request, "trackshop/partials/inventory/inventory_form.html", {})
@@ -463,8 +463,42 @@ def new_inventory_view(request):
 def load_inventory(request, inv_pk):
 	inventory = get_object_or_404(Inventory, pk=inv_pk)
 	return render(request, "trackshop/partials/inventory/inventory_view.html", {'inventory':inventory})
+
+def inventory_detail(request, inventory_pk):
+	inventory = get_object_or_404(Inventory, pk=inventory_pk)
+	inventory.last_access_date = now
+	inventory.save()
+
+	if request.method == "POST":
+		for item in inventory.items.all():
+			physical = int(request.POST.get(f'physical_{item.id}',
+			item.physical_quantity))
+			item.physical_quantity = physical
+			item.difference = physical - item.system_quantity
+			item.save()
+		return redirect("TrackShop:inventory")
+	return render(request, "trackshop/partials/inventory/inventory_detail.html", {
+		"inventory": inventory
+	})
+
+def inventory_detail_pdf(request, inventory_pk):
+
+	inventory = get_object_or_404(Inventory, pk=inventory_pk)
 	
-		
+	html_string = render_to_string(
+		"trackshop/inventory_detail_pdf.html",context={
+			"date":now.date(),
+			"inventory":inventory
+		}
+	)
+
+	pdf = HTML(string=html_string).write_pdf()
+	response = HttpResponse(pdf, content_type='application/pdf')
+	response['Content-Disposition'] = f'inline; filename="Inventaire_du_{inventory.start_date}_au_{inventory.end_date}.pdf"'
+	return response
+
+	
+	
 def history(request):
 	sales = Sale.objects.all().order_by("-created_at")
 	return render(request, "trackshop/history.html", context={"sales": sales})

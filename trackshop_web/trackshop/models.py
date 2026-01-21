@@ -293,6 +293,7 @@ class Inventory(models.Model):
 	end_date = models.DateField()
 	inventory_type = models.CharField(max_length=10, choices=INVENTORY_TYPE)
 	closed = models.BooleanField(default=False)
+	last_access_date = models.DateTimeField(auto_now_add=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):

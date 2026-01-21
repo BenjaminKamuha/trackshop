@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load math_tags %}
 
 {% block sub_menu %}
     <h1>Inventory</h1>
@@ -7,19 +8,63 @@
 
     {% for inventory in inventories %}
 
-        <div style="border: 2px solid blue;" hx-get="{% url 'TrackShop:load-inventory' inventory.pk %}" hx-target="#inventory_view" hx-trigger="click" class="box">
+        <div style="border: 2px solid blue;" hx-get="{% url 'TrackShop:inventory-detail' inventory.pk %}" hx-target="#inventory_detail" hx-trigger="click" class="box">
             <p>{{ inventory }} type: {{ inventory.inventory_type }}</p>
         </div>
     {% endfor %}
 {% endblock %}
 
 {% block content %}
-        <div id="inventory_view">
-            <h1>Inventaire du {{ last_created.created_at|date:"d/m/Y" }}</h1>
-            <p>Vente totales: {{ last_created.summary.total_sales }}</p>
-            <p>Produit retournés: {{ last_created.summary.total_returns }}</p>
-            <p>Revenue net: {{ last_created.summary.net_revenue }}</p>
-            <p>Montant tôtal payé: {{ last_created.summary.total_paid }}</p>
-            <p>Crédit tôtal: {{ last_created.summary.total_credit }}</p>
-        </div>
+    <h3>Créer un nouveau inventaire</h3>
+
+    <form action="{% url 'TrackShop:new-inventory' %}" method="POST">
+        {% csrf_token %}
+        <label for="start_date">Date debut: </label><input type="date" name="start_date" id="start_date" required><br>
+        <label for="end_date">Date fin: </label><input type="date" name="end_date" id="end_date" required><br>
+        <label for="inv_type">Type d'inventaire: </label>
+        <select name="inventory_type" id="">
+            <option value="monthly">Mensuel</option>
+            <option value="yearly">Annuel</option>
+        </select>
+        <button type="submit">Créer l'inventaire</button>
+    </form>
+
+    <div id="inventory_detail">
+        <h2>Inventaire {{ inventory.start_date }} - {{ inventory.end_date }}</h2>
+
+<form action="{% url 'TrackShop:inventory-detail' inventory.pk %}" method="POST">
+    {% csrf_token %}
+    <table>
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Stock système</th>
+                <th>Stock physique</th>
+                <th>Différence</th>
+                <th>Prix USD</th>
+                <th>Valeur écart</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.system_quantity }}</td>
+                <td>
+                    <input type="number" name="physical_{{ item.id }}" value="{{ item.physical_quantity }}">
+                </td>
+                
+                <th>{{ item.difference }}</th>
+                <th>{{ item.product.price }}</th>
+                <td>
+                    {{ item.difference|mul:item.product.price }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+        <button type="submit">Enregistrer</button> <a href="{% url 'TrackShop:inventory-detail-pdf' inventory.pk %} ">Exporter en pdf</a>
+
+</form>
+    </div>    
 {% endblock %}

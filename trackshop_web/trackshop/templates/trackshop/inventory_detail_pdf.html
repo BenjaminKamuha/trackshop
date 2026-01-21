@@ -1,0 +1,92 @@
+{% load math_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .border {
+            border: 2px solid black;
+        }
+        
+        .flex {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        tr {
+            font-size: 14px;
+        }
+
+        .header, h2 {
+            font-size: 16px;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <h2 style="text-align: center;">ETS KALEMO-SERVICE</h2>
+    <div class="flex justify-between">
+        <div class="header">
+            CHEZ M. KALEMO STIVEN <br>
+            BBO/RCCM/25-A-2098 <br>
+            46 AV.NGULO C/VULAMBA <br>
+            N°ID: 19-G4701-N77400R <br>
+            Tel: +243 993 034 970 <br>
+        </div>
+        <div>
+            Date : {{ date }}
+    <br>
+        </div>
+    </div>
+        <h2 style="text-align: center;">Inventaire {{ inventory.start_date }} - {{ inventory.end_date }}</h2>
+
+        <table>
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Stock système</th>
+                <th>Stock physique</th>
+                <th>Différence</th>
+                <th>Prix USD</th>
+                <th>Valeur écart</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.system_quantity }}</td>
+                <td>{{ item.physical_quantity }}</td>
+                
+                <td>{{ item.difference }}</td>
+                <td>{{ item.product.price }}</td>
+                <td>
+                    {{ item.difference|mul:item.product.price }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
+
+
