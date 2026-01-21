@@ -201,8 +201,6 @@ def fallow_client(request, client_pk):
 
 	return render(request, "trackshop/partials/client/fallow.html", context={})
 
-	
-
 def stock(request):
 	stocks = Stock.objects.all()
 	last_access_stock = Stock.objects.order_by("-last_access_date").first()
@@ -311,9 +309,10 @@ def sale(request):
 def cash_book(request):
 	if request.method == "POST":
 		currency_code = request.POST.get('currency')
+		date = request.POST.get('date')
 		currency = Currency.objects.get(code=currency_code)
 		entries = CashBook.objects.filter(
-			currency=currency
+			currency=currency, date=date
 		).order_by('date')
 
 		balance = 0
@@ -332,9 +331,44 @@ def cash_book(request):
 
 		return render(request, "trackshop/partials/cash_book/cashbook.html", context={
 			"rows": rows,
-			"currency": currency
+			"currency": currency,
+			"date": date,
 		})
 	return render(request, "trackshop/cashbook.html", {})
+
+def cash_book_pdf(request, currency_code, date):
+	currency = Currency.objects.get(code=currency_code)
+	entries = CashBook.objects.filter(
+		currency=currency, date=date
+	).order_by('date')
+
+
+	balance = 0
+	rows = []
+
+	for entry in entries:
+		balance += entry.income - entry.expense
+		rows.append({
+			"date": entry.date,
+			"description": entry.description,
+			"income": entry.income,
+			"expense": entry.expense,
+			"balance": balance
+		})
+	
+	html_string = render_to_string(
+		"trackshop/cash_book_pdf.html",context={
+			"rows": rows,
+			"currency": currency,
+			"date":date
+		}
+	)
+
+	pdf = HTML(string=html_string).write_pdf()
+	response = HttpResponse(pdf, content_type='application/pdf')
+	response['Content-Disposition'] = f'inline; filename="Livre_de_caisse_{currency_code}_du_{date}.pdf"'
+	return response
+	
 
 @transaction.atomic
 def create_inventory(start_date, end_date, inv_type):

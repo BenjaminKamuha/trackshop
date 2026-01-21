@@ -18,3 +18,5 @@
             </tr>
         {% endfor %}
     </table>
+
+    <a href="{% url 'TrackShop:cash-book-pdf' currency.code date %} ">Exporter en pdf</a>

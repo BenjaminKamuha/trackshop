@@ -24,6 +24,7 @@ urlpatterns = [
 	path('stock/new_product/<int:stock_pk>', views.new_product, name="new_product"),
 	path('stock/product/details/<int:product_pk>', views.product_detail, name="product_details"),
 	path('cash_book/', views.cash_book, name="cash_book"),
+	path('cash_book/export_pdf/<str:currency_code>/<str:date>/', views.cash_book_pdf, name='cash-book-pdf'),
 	path('history/', views.history, name="history"),
 	path('history/product_return/<int:item_pk>/', views.save_return, name="product-return"),
 	path('inventory/', views.inventory, name='inventory'),

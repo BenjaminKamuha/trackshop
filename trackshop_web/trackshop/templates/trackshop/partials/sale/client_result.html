@@ -14,15 +14,3 @@
         </form>
     {% endif %}
 </div>
-
-
-
-
-    {% if providers %}    
-        {% for p in providers %}
-            <label for="provider{{ p.id }}" style="border: 2px solid rgb(233, 95, 15); height: 50px; margin-left: 10px;">{{ p.name }}</label>
-            <input id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
-        {% endfor %}
-    {% else %}
-
-    {% endif %}
