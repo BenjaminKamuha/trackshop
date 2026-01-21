@@ -1,0 +1,20 @@
+    <h2>Livre de caisse ({{ currency.code }})</h2>
+
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Entrée</th>
+            <th>Sortie</th>
+            <th>Solde</th>
+        </tr>
+        {% for row in rows %}
+            <tr>
+                <td>{{ row.date|date:"d/m/Y" }}</td>
+                <td>{{ row.description }}</td>
+                <td>{{ row.income|floatformat:2 }} {{ currency.symbol }}</td>
+                <td>{{ row.expense|floatformat:2 }} {{ currency.symbol }}</td>
+                <td>{{ row.balance|floatformat:2 }} {{ currency.symbol }}</td>
+            </tr>
+        {% endfor %}
+    </table>

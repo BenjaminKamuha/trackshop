@@ -1,3 +1,16 @@
 <div style="display: flex;">
- 
+     {% if providers %}    
+        {% for p in providers %}
+            <label for="provider{{ p.id }}" style="border: 2px solid rgb(233, 95, 15); height: 50px; margin-left: 10px;">{{ p.name }}</label>
+            <input id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
+        {% endfor %}
+    {% else %}
+        <span>Ce fournisseur n'est pas enregistré</span>
+        <form action="{% url 'TrackShop:new-provider' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" id="name" value="{{ search_input }}" name="provider_name"><br>
+            <input type="hidden" value="purchase" name="from">
+            <button type="submit">Ajouter</button>
+        </form>
+    {% endif %}
 </div>

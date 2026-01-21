@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block sub_menu %}
+    <h1>History d'achat</h1>
+{% endblock %}
+
+{% block content %}
+    {% for purchase in purchases %}
+        <div class="purchase" style="border-bottom: 2px solid rgb(194, 25, 90);">
+            <p>Date : {{ purchase.created_at }}</p>
+            <p>provider : {{ purchase.provider }}</p>
+            <p>Nombre de produit: {{ purchase.items.count }}</p>
+            <p>Produit acheté:  
+                <div style="display: flex;">
+                    {% for item in purchase.items.all %}
+                        <div style="border: 2px solid rgb(25, 255, 121); margin-left: 10px;">
+                            <h3> {{ item.product }}</h3>
+                            <p>Quantité: {{ item.quantity }}</p>
+                           <!---  <p>retourné: </p>
+                                <div style="border: 1px solid silver; margin-left: 50px; display: flex; justify-content: space-around;">
+                                    {% for return in item.returns.all %}
+                                        <div style="border: 1px solid gray;">
+                                            <p>Date: {{ return.date }}</p>
+                                            <p>Quantité: {{ returrn.quantity }}</p>
+                                            <p>Reason: {{ return.reason }}</p>
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+                                 <a href="" 
+                                    hx-get="{% url 'TrackShop:product-return' item.pk %}"
+                                    hx-trigger="click"
+                                    hx-target="#form"
+                                >Enregistrer un retour</a> --->
+                        </div>                
+                    {% endfor %}
+                </div>
+
+            <p>Montant total: {{ purchase.total_amount }}<span> </span>{{ purchase.currency.symbol }}</p>
+            <p>Montant payé: {{ purchase.paid_amount }}<span> </span>{{ purchase.currency.symbol }}</p>
+            
+            {% if purchase.is_credit %}
+                <p>Status: 
+                    <span style="color:rgb(43, 6, 209);">Vente en crédit</span><br>
+                    <div style="border: 2px solid rgb(7, 170, 211); width: 30%; margin-left: 50px;">
+                        Payement recent: {{ purchase.payments.all.last.amount }}<span> </span>{{ purchase.currency.symbol }}<br>
+                        Montant restant: {{ purchase.balance }}<span> </span> {{ purchase.currency.symbol }} <a href="{% url 'TrackShop:provider-payment' purchase.pk %}"><button>Ajouter Payement</button></a>
+                    </div>
+                        
+
+                </p>
+            {% else %}
+                <p>Status:
+                    <span style="color:green;">Payé</span>
+
+                
+                </p>
+            {% endif %}
+        </div>
+        
+    {% endfor %}
+{% endblock %}

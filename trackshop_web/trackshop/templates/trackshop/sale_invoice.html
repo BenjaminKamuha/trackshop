@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,24 +19,43 @@
         th {
             background-color: #f0f0f0;
         }
+
+        .border {
+            border: 2px solid black;
+        }
+        
+        .flex {
+            display: flex;
+            justify-content: space-between;
+        }
+
     </style>
 </head>
 <body>
 
-<h2>Facture</h2>
+<h2 style="text-align: center;">ETS KALEMO-SERVICE</h2>
+<div class="flex justify-between">
+    <div class="">
+        CHEZ M. KALEMO STIVEN <br>
+        BBO/RCCM/25-A-2098 <br>
+        46 AV.NGULO C/VULAMBA <br>
+        N°ID: 19-G4701-N77400R <br>
+        Tel: +243 993 034 970 <br>
+    </div>
+    <div>
+        Date : {{ sale.created_at|date:"d/m/Y" }}<br>
+        Facture N°: {{ sale.id }}<br>
+        Status :
+        {% if sale.is_credit %}
+            <span style="color:red;">Vente en crédit</span>
+        {% else %}
+            <span style="color:green;">Payé</span>
+        {% endif %}
+    </div>
+</div>
 
-<p>
-    Client: {{ sale.client.complete_name }}<br>
-    Date : {{ sale.created_at|date:"d/m/Y" }}<br>
-    Facture N° {{ sale.id }}<br>
-    Status :
-    {% if sale.is_credit %}
-        <span style="color:red;">Vente en crédit</span>
-    {% else %}
-        <span style="color:green;">Payé</span>
-    {% endif %}
-</p>
-
+<h2 style="text-align: center;">Facture</h2>
+<p>Mr, Mlle {{ sale.client.complete_name }} doit pour </p>
 <table>
     <thead>
         <tr>

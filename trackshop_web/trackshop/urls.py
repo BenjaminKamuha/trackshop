@@ -43,6 +43,7 @@ urlpatterns = [
 	path('purchase/add_payment/<int:purchase_pk>/', views.provider_payment, name='provider-payment'),
 	path('purchase/add_payment/success/', views.payment_succes, name='payment-success'),
 	path('purchase/search_provider/', views.search_provider, name='search-provider'),
+	path('purchase/history/', views.purchase_history, name='purchase-history'),
 
 
 ]

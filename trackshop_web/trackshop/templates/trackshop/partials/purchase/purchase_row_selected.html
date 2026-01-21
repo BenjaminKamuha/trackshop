@@ -1,6 +1,7 @@
 <div class="product-row" id="prod{{ product.pk }}" style="border: 2px solid rgb(128, 0, 90); padding: 20px;" onload="alert('Bonjour')">
     <element id="header" style="display: flex; justify-content: space-between;">
         <h1>{{ product }}</h1>
+        <p>Prix de vente: <input type="number" value="{{ product.price }}" name="sale_price[]"></p>
         <button style="height: 30px;" type="button" onclick="this.closest('div').remove(); updateAddButton()">❌</button>
     </element>
         <label for="product_price">Prix d'achat unitaire : </label><input id="product_price" type="number" focus name="unit_cost[]" min="0.00" step="0.01" value="0.00" required read

@@ -3,3 +3,23 @@
 {% block sub_menu %}
     <h1>Livre</h1>
 {% endblock %}
+
+ {% block content %}
+
+    <form 
+        hx-post="{% url 'TrackShop:cash_book' %}"
+        hx-target="#cash_book"
+        hx-swap="innerHTML"
+        >
+        {% csrf_token %}
+        <label for="currency">Choisir la dévise:</label>
+        <select name="currency" id="currency">
+            <option value="USD">USD</option>
+            <option value="CDF">CDF</option>
+        </select>
+        <button type="submit">Afficher le livre de caisse</button>
+    </form>
+
+    <div id="cash_book">
+    </div>
+ {% endblock %}

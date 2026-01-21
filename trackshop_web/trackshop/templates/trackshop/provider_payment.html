@@ -31,10 +31,7 @@
         </div>
 
         <form
-            hx-post="{% url 'TrackShop:provider-payment' purchase.pk %}" 
-            hx-target="#payment"
-            hx-swap="innerHTML"
-            >
+            action="{% url 'TrackShop:provider-payment' purchase.pk %}" method="POST">
             {% csrf_token %} 
             <label for="currency">Selectionner la Dévise: </label>
             <select id="currency_select" name="currency" id="" required>

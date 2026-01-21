@@ -31,6 +31,16 @@
                 <p>{{ evaliable_quantity }}</p>
                 <p> Pièces </p>
             </div>
+
+            <div style="border: 2px solid blue; text-align: center;">
+                <p>Dette client</p>
+                <p>{{ product_debt|floatformat:2 }}</p>
+            </div>
+
+            <div style="border: 2px solid blue; text-align: center;">
+                <p>Dette fournisseur</p>
+                <p>{{ product_provider_debt|floatformat:2 }}</p>
+            </div>
         </div>
     </div>
 

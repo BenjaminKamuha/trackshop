@@ -25,6 +25,7 @@ from .models import (
 	Purchase,
 	PurchaseItem,
 	ProviderPayment,
+	CashBook,
 
 	)
 
@@ -138,7 +139,7 @@ def new_client(request):
 def new_provider(request):
 	if request.method == "POST":	
 		name = request.POST.get('provider_name')
-		from_request = request.POST.get('from_request')
+		from_request = request.POST.get('from')
 		Provider.objects.create(
 			name=name
 		)
@@ -248,11 +249,58 @@ def product_detail(request, product_pk):
 	stock = product.stock 
 	stock.last_access_product_id = product_pk
 	stock.save()
+
+	# Rapport dette produit
+	credit_sales = Sale.objects.filter(
+		is_credit=True, items__product=product
+	).distinct()
+
+	# Calcule de la dette client pour ce produit
+	product_debt = 0
+
+	for sale in credit_sales:
+		sale_total = sale.total_amount_base 
+		sale_balance = sale.balance
+
+		items = sale.items.filter(product=product)
+
+		product_total = items.aggregate(
+			total=Sum('total_price')
+		)['total'] or 0
+
+		if sale_total > 0:
+			product_debt += (product_total / sale_total * sale_balance) 
+
+	# Rapport dette fournisseur pour ce produit
+	credit_purchases = Purchase.objects.filter(
+		is_credit=True,
+		items__product=product
+	).distinct()
+
+	product_provider_debt = 0
+
+	for purchase in credit_purchases:
+		purchase_total = purchase.total_amount_base 
+		purchase_balance = purchase.balance
+
+		product_subtotal = purchase.items.filter(
+			product=product
+		).aggregate(
+			total=Sum('total_cost')
+		)['total'] or 0
+
+		if purchase_total > 0:
+			product_provider_debt += (
+				product_subtotal / purchase_total
+			) * purchase_balance
+
 	return render(request, "trackshop/partials/product/partial_product_detail.html", context={
 		"product": product, 
 		"sales_this_month": sales_this_month,
 		"evaliable_quantity": evaliable_quantity,
 		"total_revenue": total_revenue,
+		"product_debt": product_debt,
+		"product_provider_debt": product_provider_debt
 		})
 
 
@@ -261,7 +309,32 @@ def sale(request):
 
 
 def cash_book(request):
-	return render(request, "trackshop/cashbook.html", context={})
+	if request.method == "POST":
+		currency_code = request.POST.get('currency')
+		currency = Currency.objects.get(code=currency_code)
+		entries = CashBook.objects.filter(
+			currency=currency
+		).order_by('date')
+
+		balance = 0
+		rows = []
+
+		for entry in entries:
+			balance += entry.income - entry.expense
+
+			rows.append({
+				"date": entry.date,
+				"description": entry.description,
+				"income": entry.income,
+				"expense": entry.expense,
+				"balance": balance
+			})
+
+		return render(request, "trackshop/partials/cash_book/cashbook.html", context={
+			"rows": rows,
+			"currency": currency
+		})
+	return render(request, "trackshop/cashbook.html", {})
 
 @transaction.atomic
 def create_inventory(start_date, end_date, inv_type):
@@ -362,6 +435,12 @@ def history(request):
 	sales = Sale.objects.all().order_by("-created_at")
 	return render(request, "trackshop/history.html", context={"sales": sales})
 
+def purchase_history(request):
+	purchases = Purchase.objects.all().order_by("-created_at")
+	return render(request, "trackshop/purchase_history.html", {
+		"purchases":purchases
+	})
+
 
 def add_payment(request, sale_id):
 	sale = get_object_or_404(Sale, pk=sale_id)
@@ -413,7 +492,7 @@ def provider_payment(request, purchase_pk):
 
 		amount = Decimal(amount)
 		purchase.add_provider_payment(amount, currency, rate)
-		return redirect("TrackShop:payment-success")
+		return redirect("TrackShop:purchase-history")
 	return render(request, "trackshop/provider_payment.html", {
 		'purchase':purchase,
 		'rate': rate	
@@ -499,14 +578,16 @@ def create_purchase(request):
 		product_ids = request.POST.getlist("product_id[]")
 		quantities = request.POST.getlist("quantity[]")
 		unit_costs = request.POST.getlist("unit_cost[]")
+		sale_prices = request.POST.getlist("sale_price[]")
 		paid_amounts = request.POST.getlist("paidAmount[]")	# Récupération des différentes montants payés
 
 
-		for pid, qty, cost, amount in zip(product_ids, quantities, unit_costs, paid_amounts):
+		for pid, qty, cost, amount, sp in zip(product_ids, quantities, unit_costs, paid_amounts, sale_prices):
 			product = Product.objects.get(id=pid)
 			qty = int(qty)
 			cost = Decimal(cost)
-			line_total = qty * cost 
+			sp = Decimal(sp)
+			line_total = qty * cost
 
 			PurchaseItem.objects.create(
 				purchase=purchase,
@@ -518,6 +599,8 @@ def create_purchase(request):
 
 			# Autgmenter le stock
 			product.quantity += qty
+			product.sale_price = sp
+			product.purchase_price = cost
 			product.save()
 			total += line_total                       
 			total_paid_amount += Decimal(amount)
@@ -528,6 +611,17 @@ def create_purchase(request):
 		purchase.paid_amount_base = total_paid_amount / rate
 		purchase.is_credit = total_paid_amount < total
 		purchase.save()
+
+		# Enregistrement du libre de caisse
+		CashBook.objects.create(
+			date=now,
+			description=f"Achat produit #{purchase.pk}",
+			currency=currency,
+			income=0,
+			expense=total_paid_amount,
+			reference_type="Purchase",
+			reference_id = purchase.pk
+		)	
 
 		return redirect("TrackShop:purchase-detail", purchase.id) 
 
@@ -612,9 +706,6 @@ def sale_save(request):
 		total += line_total * rate
 		total_paid_amount += paid_amount  
 
-
-	# test
-
 	# verifier si c'est une vente en crédit
 	if (total_paid_amount < total):
 		sale.is_credit = True
@@ -626,6 +717,16 @@ def sale_save(request):
 	
 	sale.save() # Enregistrement de la vente
 
+	# Enregistrement livre de caisse
+	CashBook.objects.create(
+		date=now,
+		description=f"Vente #{sale.pk}",
+		currency=currency,
+		income=total_paid_amount,
+		expense=0,
+		reference_type="Sale",
+		reference_id = sale.pk
+	)
 	return redirect("TrackShop:sale-invoice-pdf", sale_id=sale.id)
 
 
@@ -643,7 +744,6 @@ def return_product(sale_item, qty):
 		sale_item = sale_item,
 		quantity = qty
 	)
-
 
 def save_return(request, item_pk):
 	item = get_object_or_404(SaleItem, pk=item_pk)

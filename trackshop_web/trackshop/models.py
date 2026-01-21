@@ -1,4 +1,8 @@
 from django.db import models
+from decimal import Decimal
+from django.utils import timezone
+
+now = timezone.now()
 
 
 CLIENT_TYPE_CHOICE = [
@@ -61,6 +65,7 @@ class Product(models.Model):
 	stock = models.ForeignKey(Stock, verbose_name="Stock", related_name="products", on_delete=models.CASCADE)
 	name = models.CharField(max_length=20, verbose_name="Nom")
 	price = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Prix Produit")
+	purchase_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Prix d'achat", default=0)
 	quantity = models.PositiveIntegerField(default=0)
 	date_added = models.DateTimeField(auto_now=True)
 	is_active = models.BooleanField(default=True)
@@ -111,6 +116,17 @@ class Purchase(models.Model):
 		self.is_credit = self.balance > 0
 		self.save()
 
+		# Enregistrement livre
+		CashBook.objects.create(
+			date=now,
+			description=f"Paiement fournisseur #{self.pk}",
+			currency=currency,
+			income=0,
+			expense=amount,
+			reference_type="Purchase",
+			reference_id=self.pk
+		)	
+
 # Les items de l'arrivage
 class PurchaseItem(models.Model):
 	purchase = models.ForeignKey(Purchase, related_name="items", on_delete=models.CASCADE)
@@ -136,10 +152,14 @@ class ProviderPayment(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 
 class CashBook(models.Model):
-	income = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="recette")
-	spending = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="depense")
-	solde = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="solde")
 	date = models.DateField(verbose_name="date")
+	description = models.CharField(max_length=255)
+	currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
+	income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="recette")
+	expense = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+	reference_type = models.CharField(max_length=50)
+	reference_id = models.PositiveIntegerField()
+	created_at = models.DateTimeField(auto_now_add=True)
 
 class Sale(models.Model):
 	client = models.ForeignKey(Client, on_delete=models.CASCADE)
@@ -182,6 +202,24 @@ class Sale(models.Model):
 		self.paid_amount_base += amount / rate
 		self.is_credit = self.balance > 0
 		self.save()
+
+		# Enregistrement livre de caisse
+		CashBook.objects.create(
+			date=now,
+			description=f"Payement dette #{self.pk}",
+			currency=currency,
+			income=amount,
+			expense=0,
+			reference_type="Sale",
+			reference_id = self.pk
+		)
+
+
+	def revenue(self):
+		revenue = Decimal(0)
+		for item in self.items.all():
+			revenue += (item.product.price * item.quantity) - (item.product.purchase_price * item.quantity)
+		return revenue
 
 
 class SaleItem(models.Model):

@@ -36,18 +36,16 @@
                     {% endfor %}
                 </div>
 
-            <p>Montant total: {{ sale.total_amount }}<span> </span>{{ sale.currency }}</p>
-            <p>Montant payé: {{ sale.paid_amount }}<span> </span>{{ sale.currency }}</p>
+            <p>Montant total: {{ sale.total_amount }}<span> </span>{{ sale.currency.symbol }}</p>
+            <p>Montant payé: {{ sale.paid_amount }}<span> </span>{{ sale.currency.symbol }}</p>
             
             {% if sale.is_credit %}
                 <p>Status: 
                     <span style="color:red;">Vente en crédit</span><br>
                     <div style="border: 2px solid red; width: 30%; margin-left: 50px;">
-                        Payement recent: {{ sale.payments.all.last.amount }}<span> </span>{{ sale.currency }}<br>
-                        Montant restant: {{ sale.balance }}<span> </span> {{ sale.currency }} <a href="{% url 'TrackShop:add-payment' sale.pk %}"><button>Ajouter Payement</button></a>
+                        Payement recent: {{ sale.payments.all.last.amount }}<span> </span>{{ sale.currency.symbol }}<br>
+                        Montant restant: {{ sale.balance }}<span> </span> {{ sale.currency.symbol }} <a href="{% url 'TrackShop:add-payment' sale.pk %}"><button>Ajouter Payement</button></a>
                     </div>
-                        
-
                 </p>
             {% else %}
                 <p>Status:
@@ -56,6 +54,10 @@
                 
                 </p>
             {% endif %}
+            <div class="flex justify-between">
+                <p>Bénefice de la vente: {{ sale.revenue }} <span> </span> {{ sale.currency.symbol }}</p>
+                <p style="text-align: right;"><a href="{% url 'TrackShop:sale-invoice-pdf' sale.pk %}">Imprimer la facture</a></p>
+            </div>
         </div>
         
     {% endfor %}
