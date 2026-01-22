@@ -33,7 +33,7 @@
 		{% django_browser_reload_script %}
 	{% endif %}
 	<header class="flex justify-between items-center w-full p-2 shadow-xl  backdrop-blur-lg pl-5 pr-5">
-			<span id="logo" class="border rounded-full p-3 text-5xl">Ts</span>
+			<span id="logo" class="border rounded-full p-3 text-3xl">Ts-{{ active_shop }}</span> 
 			<nav class="" >
 				{% block nav %}
 				    <ul id="main_nav" class="w-full">
@@ -48,7 +48,15 @@
 					</ul>
 				{% endblock %}
 			</nav>
-			<span class="rounded-full border h-15 w-15 pt-4 text-center text-xl">User</span>
+
+			<div class="">
+				{% block profil %}
+					{{ user }} <br>
+					<a href="{% url 'Account:logout' %}">Logout</a>
+				{% endblock %}
+			</div>
+
+
 	</header>
 
 	<main style="display: flex;">

@@ -42,3 +42,9 @@ class ProductForm(forms.ModelForm):
         elif price < 0:
             raise forms.ValidationError("Le prix est invalide")
 
+class SwitchShopForm(forms.Form):
+    shop = forms.ModelChoiceField(queryset=None)
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['shop'].queryset = user.shops.all()

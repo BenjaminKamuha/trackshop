@@ -1,55 +1,75 @@
 from django.db import migrations
 from django.utils.timezone import now
 
-
 def create_currency(apps, schema_editor):
     Currency = apps.get_model('trackshop', 'Currency')
+    ExchangeRate = apps.get_model('trackshop', 'ExchangeRate')
+    Shop = apps.get_model('accounts', 'Shop')
 
-    Currency.objects.get_or_create(
+    # 1️⃣ Shop SYSTEM
+    system_shop, _ = Shop.objects.get_or_create(
+        name='SYSTEM',
+        defaults={
+            'is_system': True,
+            'owner_id': None,
+            'default_currency_id': None,
+        }
+    )
+
+    today = now().date()
+
+    # 2️⃣ Devises
+    usd_currency, _ = Currency.objects.get_or_create(
         code='USD',
         defaults={'name': 'Dollar US', 'symbol': '$'}
     )
 
-    Currency.objects.get_or_create(
+    cdf_currency, _ = Currency.objects.get_or_create(
         code='CDF',
         defaults={'name': 'Franc Congolais', 'symbol': 'FC'}
     )
 
-    ExchangeRate = apps.get_model('trackshop', 'ExchangeRate')
-    usd_currency = Currency.objects.get(code='USD')
-    cdf_currency = Currency.objects.get(code='CDF') 
-
+    # 3️⃣ Taux de change (⚠️ UNIQUEMENT *_id)
     ExchangeRate.objects.get_or_create(
-        from_currency=usd_currency,
-        to_currency=usd_currency,
-        defaults={'rate': 1.0, 'date': now().date()}
+        shop_id=system_shop.id,
+        from_currency_id=usd_currency.id,
+        to_currency_id=usd_currency.id,
+        date=today,
+        defaults={'rate': 1.0}
     )
 
     ExchangeRate.objects.get_or_create(
-        from_currency=cdf_currency,
-        to_currency=cdf_currency,
-        defaults={'rate': 1.0, 'date': now().date()}
-    )
-    ExchangeRate.objects.get_or_create(
-        from_currency=usd_currency,
-        to_currency=cdf_currency,
-        defaults={'rate': 2000.0, 'date': now().date()}  # Example rate, adjust as needed
+        shop_id=system_shop.id,
+        from_currency_id=cdf_currency.id,
+        to_currency_id=cdf_currency.id,
+        date=today,
+        defaults={'rate': 1.0}
     )
 
-    
     ExchangeRate.objects.get_or_create(
-        from_currency=cdf_currency,
-        to_currency=usd_currency,
-        defaults={'rate': 2000.0, 'date': now().date()}  # Example rate, adjust as needed
+        shop_id=system_shop.id,
+        from_currency_id=usd_currency.id,
+        to_currency_id=cdf_currency.id,
+        date=today,
+        defaults={'rate': 2000.0}
     )
+
+    ExchangeRate.objects.get_or_create(
+        shop_id=system_shop.id,
+        from_currency_id=cdf_currency.id,
+        to_currency_id=usd_currency.id,
+        date=today,
+        defaults={'rate': 1 / 2000.0}
+    )
+
 
 class Migration(migrations.Migration):
+
     dependencies = [
-            ('trackshop', '0001_initial'), 
-        ]
+        ('accounts', '0001_initial'),
+        ('trackshop', '0001_initial'),
+    ]
 
     operations = [
-            migrations.RunPython(create_currency)
-        ]
-
-    
+        migrations.RunPython(create_currency),
+    ]

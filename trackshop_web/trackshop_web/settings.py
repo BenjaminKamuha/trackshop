@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'tailwind',
     'django_browser_reload',
     'trackshop',
+    'accounts',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     'django_htmx.middleware.HtmxMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware',
     'trackshop.middlewares.ExchangeRateRequiredMiddleware',
+    'accounts.middleware.ActiveShopMiddleware',
 ]
 
 ROOT_URLCONF = 'trackshop_web.urls'

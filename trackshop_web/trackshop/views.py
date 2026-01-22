@@ -1,11 +1,16 @@
-from django.shortcuts import render, get_object_or_404
-from django.shortcuts import redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, F, DecimalField
-from .forms import StockForm, ProductForm, ClientForm
+from .forms import StockForm, ProductForm, ClientForm, SwitchShopForm
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from decimal import Decimal
+from random import choice
 from .models import (
 	Stock, 
 	Client, 
@@ -26,13 +31,10 @@ from .models import (
 	PurchaseItem,
 	ProviderPayment,
 	CashBook,
+	StockMovement,
 
 	)
 
-from django.template.loader import render_to_string
-from weasyprint import HTML
-from decimal import Decimal
-from random import choice
 
 now = timezone.now()
 
@@ -72,21 +74,20 @@ def get_today_rate(from_currency, to_currency):
 
 def dashboard(request):
 	# nombre de stock
+	active_shop = request.active_shop
 	today = timezone.now().date()
-	stocks = Stock.objects.all()
-	clients = Client.objects.all()
-	debts = ClientDebt.objects.all()
-	todaySales = Sale.objects.filter(created_at=today)
-	todaySpending = Spending.objects.filter(date=today)
-	providers = Provider.objects.all()
-	
+	stocks = Stock.objects.filter(shop=request.active_shop)
+	clients = Client.objects.filter(shop=request.active_shop)
+	todaySales = Sale.objects.filter(shop=request.active_shop, created_at=today)
+	providers = Provider.objects.filter(shop=request.active_shop)
+
 	return render(request, "trackshop/dashboard.html", context={
 		"stocks": stocks,
 		"clients": clients,
-		"debts": debts,
 		"todaySales": todaySales,
-		"todaySpending": todaySpending,
-		"providers": providers
+		"providers": providers,
+		"user": request.user,
+		"active_shop": active_shop
 		})
 
 def new_stock(request):
@@ -99,6 +100,7 @@ def new_stock(request):
 		if stock_form.is_valid():
 			stock = stock_form.save(commit=False)
 			stock.last_access_date = timezone.now()
+			stock.shop = request.active_shop
 			stock.save()
 			if source == "dashboard":
 				return redirect("TrackShop:dashboard")
@@ -118,14 +120,19 @@ def new_client(request):
 		source = request.POST.get("from")
 		if source == "sale":
 			Client.objects.create(
+				shop=request.active_shop,
 				complete_name=request.POST.get('client_name')
 			)
 			return redirect("TrackShop:sale-create")
 
-		source = request.POST.get("from")
 		client_form = ClientForm(request.POST)
 		if client_form.is_valid():
-			client_form.save()
+			print(request.POST)
+			
+			client = client_form.save(commit=False)
+			client.shop = request.active_shop
+			client.save()
+
 			if source == "dashboard":
 				return redirect("TrackShop:dashboard")
 			else:
@@ -153,7 +160,7 @@ def new_provider(request):
 	
 
 def client(request):
-	clients = Client.objects.all()
+	clients = Client.objects.filter(shop=request.active_shop)
 	return render(request, "trackshop/client.html", context={"clients": clients})
 
 def load_client_sub_menu(request, client_pk):
@@ -202,8 +209,8 @@ def fallow_client(request, client_pk):
 	return render(request, "trackshop/partials/client/fallow.html", context={})
 
 def stock(request):
-	stocks = Stock.objects.all()
-	last_access_stock = Stock.objects.order_by("-last_access_date").first()
+	stocks = Stock.objects.filter(shop=request.active_shop)
+	last_access_stock = Stock.objects.filter(shop=request.active_shop).order_by("-last_access_date").first()
 	return render(request, "trackshop/stock.html", context={"stocks": stocks, "stock": last_access_stock})
 
 def load_stock_product(request, stock_pk):
@@ -213,12 +220,9 @@ def load_stock_product(request, stock_pk):
 	products = Product.objects.filter(stock=stock_pk)
 	try:
 		product = Product.objects.get(pk=stock.last_access_product_id)
-		print(product)
 		return render(request, "trackshop/partials/product/partial_product.html", context={"products": products, "product": product, "stock": stock})
-
 	except:
 		pass
-	
 	return render(request, "trackshop/partials/product/partial_product.html", context={"products": products, "stock": stock})
 
 def new_product(request, stock_pk):
@@ -312,7 +316,7 @@ def cash_book(request):
 		date = request.POST.get('date')
 		currency = Currency.objects.get(code=currency_code)
 		entries = CashBook.objects.filter(
-			currency=currency, date=date
+			shop=request.active_shop, currency=currency, date=date
 		).order_by('date')
 
 		balance = 0
@@ -469,14 +473,30 @@ def inventory_detail(request, inventory_pk):
 	inventory.last_access_date = now
 	inventory.save()
 
-	if request.method == "POST":
-		for item in inventory.items.all():
-			physical = int(request.POST.get(f'physical_{item.id}',
-			item.physical_quantity))
-			item.physical_quantity = physical
-			item.difference = physical - item.system_quantity
-			item.save()
+	if inventory.closed:
+		messages.error(request, "Inventaire déjà clôturé")
 		return redirect("TrackShop:inventory")
+
+	if request.method == "POST":
+		with transaction.atomic():
+			for item in inventory.items.select_related("product", "product__stock"):
+				product = item.product
+				stock = product.stock
+
+				StockMovement.objects.create(
+					stock=stock,
+					product=product,
+					movement_type='adjust',
+					quantity=item.physical_quantity,
+					reference=f"Inventaire {inventory.pk}"
+				).apply()
+			
+			inventory.closed = True
+			inventory.save()
+
+		messages.success(request, "Inventaire appliqué avec succès")				
+		return redirect("TrackShop:inventory")
+
 	return render(request, "trackshop/partials/inventory/inventory_detail.html", {
 		"inventory": inventory
 	})
@@ -666,7 +686,17 @@ def create_purchase(request):
 			)
 
 			# Autgmenter le stock
-			product.quantity += qty
+			#product.quantity += qty
+			
+			StockMovement.objects.create(
+				stock=product.stock,
+				product=product,
+				movement_type='in',
+				quantity=qty,
+				reference=f"Achat fournisseur #{purchase.provider.name}"
+			).apply()
+			
+			
 			product.sale_price = sp
 			product.purchase_price = cost
 			product.save()
@@ -680,8 +710,9 @@ def create_purchase(request):
 		purchase.is_credit = total_paid_amount < total
 		purchase.save()
 
-		# Enregistrement du libre de caisse
+		# Enregistrement du livre de caisse
 		CashBook.objects.create(
+			shop=request.active_shop
 			date=now,
 			description=f"Achat produit #{purchase.pk}",
 			currency=currency,
@@ -767,7 +798,16 @@ def sale_save(request):
 		)
 
 		# On diminue la quantité acheté du produit
-		product.quantity -= qty
+		#product.quantity -= qty
+		StockMovement.objects.create(
+			stock=product.stock,
+			product=product,
+			movement_type='out',
+			quantity=qty,
+			reference=f"Vente #{sale.pk}"
+		).apply()
+		
+		
 		product.save()
 
 
@@ -795,7 +835,7 @@ def sale_save(request):
 		reference_type="Sale",
 		reference_id = sale.pk
 	)
-	return redirect("TrackShop:sale-invoice-pdf", sale_id=sale.id)
+	return redirect("TrackShop:sale-invoice-pdf", sale_id=sale.pk)
 
 
 @transaction.atomic
@@ -804,7 +844,16 @@ def return_product(sale_item, qty):
 		raise ValidationError("Retour invalide")
 	
 	product = sale_item.product 
-	product.quantity += qty 
+	#product.quantity += qty 
+
+	StockMovement.objects.create(
+		stock=product.stock,
+		product=product,
+		movement_type='in',
+		quantity=qty,
+		reference=f"Retour vente #{sale.pk}"
+	).apply()
+	
 	product.is_active = True
 	product.save()
 

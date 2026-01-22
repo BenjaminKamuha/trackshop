@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load math_tags %}
 
+
 {% block sub_menu %}
     <h1>Inventory</h1>
 
@@ -29,42 +30,44 @@
         <button type="submit">Créer l'inventaire</button>
     </form>
 
-    <div id="inventory_detail">
-        <h2>Inventaire {{ inventory.start_date }} - {{ inventory.end_date }}</h2>
+    {% if inventory %}
+        <div id="inventory_detail">
+            <h2>Inventaire {{ inventory.start_date }} - {{ inventory.end_date }}</h2>
 
-<form action="{% url 'TrackShop:inventory-detail' inventory.pk %}" method="POST">
-    {% csrf_token %}
-    <table>
-        <thead>
-            <tr>
-                <th>Produit</th>
-                <th>Stock système</th>
-                <th>Stock physique</th>
-                <th>Différence</th>
-                <th>Prix USD</th>
-                <th>Valeur écart</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in inventory.items.all %}
-            <tr>
-                <td>{{ item.product.name }}</td>
-                <td>{{ item.system_quantity }}</td>
-                <td>
-                    <input type="number" name="physical_{{ item.id }}" value="{{ item.physical_quantity }}">
-                </td>
-                
-                <th>{{ item.difference }}</th>
-                <th>{{ item.product.price }}</th>
-                <td>
-                    {{ item.difference|mul:item.product.price }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-        <button type="submit">Enregistrer</button> <a href="{% url 'TrackShop:inventory-detail-pdf' inventory.pk %} ">Exporter en pdf</a>
+            <form action="{% url 'TrackShop:inventory-detail' inventory.pk %}" method="POST">
+                {% csrf_token %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Stock système</th>
+                            <th>Stock physique</th>
+                            <th>Différence</th>
+                            <th>Prix USD</th>
+                            <th>Valeur écart</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in inventory.items.all %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.system_quantity }}</td>
+                            <td>
+                                <input type="number" name="physical_{{ item.id }}" value="{{ item.physical_quantity }}">
+                            </td>
+                            
+                            <th>{{ item.difference }}</th>
+                            <th>{{ item.product.price }}</th>
+                            <td>
+                                {{ item.difference|mul:item.product.price }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                    <button type="submit">Enregistrer</button> <a href="{% url 'TrackShop:inventory-detail-pdf' inventory.pk %} ">Exporter en pdf</a>
 
-</form>
-    </div>    
+            </form>
+        </div>   
+    {% endif %} 
 {% endblock %}
