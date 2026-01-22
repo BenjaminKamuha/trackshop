@@ -43,8 +43,7 @@ def index(request):
 
 def set_exchange_rate(request):
 
-	last_rate = ExchangeRate.objects.all().last()
-	
+	last_rate = ExchangeRate.objects.filter(shop=request.active_shop).last()
 	if request.method == "POST":
 		from_code = request.POST['from_currency']
 		to_code = request.POST['to_currency']
@@ -77,17 +76,19 @@ def dashboard(request):
 	active_shop = request.active_shop
 	today = timezone.now().date()
 	stocks = Stock.objects.filter(shop=request.active_shop)
+	products = Product.objects.filter(shop=request.active_shop)
 	clients = Client.objects.filter(shop=request.active_shop)
 	todaySales = Sale.objects.filter(shop=request.active_shop, created_at=today)
 	providers = Provider.objects.filter(shop=request.active_shop)
 
 	return render(request, "trackshop/dashboard.html", context={
 		"stocks": stocks,
+		"products": products,
 		"clients": clients,
 		"todaySales": todaySales,
 		"providers": providers,
 		"user": request.user,
-		"active_shop": active_shop
+		"active_shop": active_shop,
 		})
 
 def new_stock(request):
@@ -148,6 +149,7 @@ def new_provider(request):
 		name = request.POST.get('provider_name')
 		from_request = request.POST.get('from')
 		Provider.objects.create(
+			shop=request.active_shop,
 			name=name
 		)
 
@@ -231,6 +233,7 @@ def new_product(request, stock_pk):
 		product_form = ProductForm(request.POST)
 		if product_form.is_valid():
 			product = product_form.save(commit=False)
+			product.shop = request.active_shop
 			product.stock = stock
 			product_form.save()
 			return redirect("TrackShop:stock")
@@ -315,8 +318,11 @@ def cash_book(request):
 		currency_code = request.POST.get('currency')
 		date = request.POST.get('date')
 		currency = Currency.objects.get(code=currency_code)
+		print(request.active_shop)
 		entries = CashBook.objects.filter(
-			shop=request.active_shop, currency=currency, date=date
+			shop=request.active_shop, 
+			currency=currency, 
+			date=date
 		).order_by('date')
 
 		balance = 0
@@ -375,16 +381,17 @@ def cash_book_pdf(request, currency_code, date):
 	
 
 @transaction.atomic
-def create_inventory(start_date, end_date, inv_type):
+def create_inventory(request, start_date, end_date, inv_type):
 	# Création de l'objet inventaire
 	inventory = Inventory.objects.create(
+		shop=request.active_shop,
 		start_date=start_date,
 		end_date=end_date,
 		inventory_type=inv_type,
 	)
 
 	# Génération des lignes
-	for product in Product.objects.all():
+	for product in Product.objects.filter(shop=request.active_shop):
 		InventoryItem.objects.create(
 			inventory=inventory,
 			product=product,
@@ -447,8 +454,8 @@ def create_inventory(start_date, end_date, inv_type):
 
 
 def inventory(request):
-	inventories = Inventory.objects.all()
-	last_access__inventory = Inventory.objects.order_by("-last_access_date").first()
+	inventories = Inventory.objects.filter(shop=request.active_shop)
+	last_access__inventory = Inventory.objects.filter(shop=request.active_shop).order_by("-last_access_date").first()
 	return render(request, "trackshop/inventory.html", context={"inventory": last_access__inventory, "inventories": inventories})
 
 def new_inventory_view(request):
@@ -458,7 +465,7 @@ def new_inventory_view(request):
 		inventory_type = request.POST['inventory_type']
 
 		# Création de l'inventaire
-		create_inventory(start_date, end_date, inventory_type)
+		create_inventory(request, start_date, end_date, inventory_type)
 		
 		return redirect('TrackShop:inventory')
 
@@ -520,11 +527,11 @@ def inventory_detail_pdf(request, inventory_pk):
 	
 	
 def history(request):
-	sales = Sale.objects.all().order_by("-created_at")
+	sales = Sale.objects.filter(shop=request.active_shop).order_by("-created_at")
 	return render(request, "trackshop/history.html", context={"sales": sales})
 
 def purchase_history(request):
-	purchases = Purchase.objects.all().order_by("-created_at")
+	purchases = Purchase.objects.filter(shop=request.active_shop).order_by("-created_at")
 	return render(request, "trackshop/purchase_history.html", {
 		"purchases":purchases
 	})
@@ -615,8 +622,8 @@ def sale_create(request, message=None):
 	)
 	
 	return render(request, "trackshop/sale_form.html", {
-		"clients": Client.objects.all(),
-		"products": Product.objects.all(),
+		"clients": Client.objects.filter(shop=request.active_shop),
+		"products": Product.objects.filter(shop=request.active_shop),
 		'rate': rate,
 		"message": message,
 	})
@@ -651,6 +658,7 @@ def create_purchase(request):
 		)
 
 		purchase = Purchase.objects.create(
+			shop=request.active_shop,
 			provider=provider,
 			currency=currency,
 			exchange_rate=rate,
@@ -712,7 +720,7 @@ def create_purchase(request):
 
 		# Enregistrement du livre de caisse
 		CashBook.objects.create(
-			shop=request.active_shop
+			shop=request.active_shop,
 			date=now,
 			description=f"Achat produit #{purchase.pk}",
 			currency=currency,
@@ -726,8 +734,8 @@ def create_purchase(request):
 
 	return render(request, "trackshop/purchase_form.html", {
 		'rate': rate,
-		'providers': Provider.objects.all(),
-		'products': Product.objects.all(),
+		'providers': Provider.objects.filter(shop=request.active_shop),
+		'products': Product.objects.filter(shop=request.active_shop),
 	})
 
 
@@ -761,13 +769,14 @@ def sale_save(request):
 		client = Client.objects.get(id=client_id)
 	else:
 		return render(request, "trackshop/sale_form.html", {
-		"clients": Client.objects.all(),
-		"products": Product.objects.all(),
+		"clients": Client.objects.filter(shop=request.active_shop),
+		"products": Product.objects.filter(shop=request.active_shop),
 		"message": "Erreur! vous dévez séléctionner un client d'abord",
 	})
 	
 	# Création de la vente
 	sale = Sale.objects.create(
+		shop=request.active_shop,
 		client=client,
 		currency=currency,
 		exchange_rate=rate, 
@@ -827,6 +836,7 @@ def sale_save(request):
 
 	# Enregistrement livre de caisse
 	CashBook.objects.create(
+		shop=request.active_shop,
 		date=now,
 		description=f"Vente #{sale.pk}",
 		currency=currency,
@@ -851,7 +861,7 @@ def return_product(sale_item, qty):
 		product=product,
 		movement_type='in',
 		quantity=qty,
-		reference=f"Retour vente #{sale.pk}"
+		reference=f"Retour vente #{sale_item.pk}"
 	).apply()
 	
 	product.is_active = True
@@ -873,23 +883,30 @@ def save_return(request, item_pk):
 
 
 def search_client(request):
+	request_from = request.GET.get('from')
 	search_input = request.GET.get('client_search', '')
-	clients = Client.objects.filter(complete_name__icontains=search_input)[:10]
+	clients = Client.objects.filter(shop=request.active_shop, complete_name__icontains=search_input)[:10]
+	from_client = False
+	if request_from == "from_client":
+		from_client = True
+
+
 	return render(request, 'trackshop/partials/sale/client_result.html', {
 		'clients': clients,
 		'search_input': search_input,
+		'from_client': from_client,
 	})
 
 def search_product(request):
     q = request.GET.get("product_search", "")
-    products = Product.objects.filter(name__icontains=q, stock__gt=0)
+    products = Product.objects.filter(shop=active_shop, name__icontains=q, stock__gt=0)
     return render(request, "trackshop/partials/sale/product_results.html", {
         "products": products,
     })
 
 def search_provider(request):
 	search_input = request.GET.get('provider_search')
-	providers = Provider.objects.filter(name__icontains=search_input)[:10]
+	providers = Provider.objects.filter(shop=request.active_shop, name__icontains=search_input)[:10]
 	return render(request, "trackshop/partials/purchase/provider_results.html", {
 		"providers": providers,
 		"search_input": search_input,

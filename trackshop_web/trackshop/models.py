@@ -77,7 +77,7 @@ class StockMovement(models.Model):
 
 	def apply(self):
 		if self.movement_type == 'in':
-			self.stock.quantity += quantity
+			self.stock.quantity += self.quantity
 			self.product.quantity += self.quantity
 
 		elif self.movement_type == 'out':
@@ -161,6 +161,7 @@ class Purchase(models.Model):
 
 		# Enregistrement livre
 		CashBook.objects.create(
+			shop=self.shop,
 			date=now,
 			description=f"Paiement fournisseur #{self.pk}",
 			currency=currency,
@@ -250,6 +251,7 @@ class Sale(models.Model):
 
 		# Enregistrement livre de caisse
 		CashBook.objects.create( # ????????????????????
+			shop=self.shop,
 			date=now,
 			description=f"Payement dette #{self.pk}",
 			currency=currency,

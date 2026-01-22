@@ -1,16 +1,26 @@
-<div style="display: flex;">
+{% if from_client %}
     {% if clients %}
-        {% for c in clients %}
-            <label for="client{{ c.id }}" style="border: 2px solid blue; height: 50px; margin-left: 10px;">{{ c.complete_name }}</label>
-            <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required onchange="document.getElementById('client_error').remove()">
+        {% for client in clients %}
+            <a href="" hx-get="{% url 'TrackShop:client_sub_menu' client.pk %}" hx-trigger="click" hx-target="#client_menu" hx-swap="innerHTML"><div style="border: 2px solid blue; height: 50px; margin-left: 20px;">{{ client }}</div></a>
         {% endfor %}
-    {% else %}
-        <span>Ce client n'est pas enregistré</span>
-        <form action="{% url 'TrackShop:new_client' %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" id="name" value="{{ search_input }}" name="client_name"><br>
-            <input type="hidden" value="sale" name="from">
-            <button type="submit">Ajouter</button>
-        </form>
     {% endif %}
-</div>
+ 
+{% else %}
+    <div style="display: flex;">
+        {% if clients %}
+            {% for c in clients %}
+                <label for="client{{ c.id }}" style="border: 2px solid blue; height: 50px; margin-left: 10px;">{{ c.complete_name }}</label>
+                <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required onchange="document.getElementById('client_error').remove()">
+            {% endfor %}
+        {% else %}
+            <span>Ce client n'est pas enregistré</span>
+            <form action="{% url 'TrackShop:new_client' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="name" value="{{ search_input }}" name="client_name"><br>
+                <input type="hidden" value="sale" name="from">
+                <button type="submit">Ajouter {{ search_input }}</button>
+            </form>
+        {% endif %}
+    </div>
+{% endif %}
+
