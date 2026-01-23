@@ -9,6 +9,11 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 
 
+def index(request):
+    if request.user.is_authenticated:
+        return redirect("TrackShop:dashboard")
+    return render(request, "accounts/index.html")
+
 def login_view(request):
     form = LoginForm()
     if request.method == "POST":
@@ -41,7 +46,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('Account:login')
+    return redirect('Account:index')
 
 
 def register_view(request):

@@ -1,6 +1,7 @@
 from django.db import models
 from decimal import Decimal
 from django.utils import timezone
+from .base import BaseSyncModel
 
 now = timezone.now()
 
@@ -61,7 +62,7 @@ class Product(models.Model):
 	def __str__(self):
 		return self.name
 
-class StockMovement(models.Model):
+class StockMovement(BaseSyncModel):
 	MOUVEMENT_TYPE = [
 		('in', 'Entrée'),
 		('out', 'Sortie'),
@@ -123,7 +124,7 @@ class Provider(models.Model):
 		return self.name
 
 # Table de gestion des achat (arrivage)
-class Purchase(models.Model):
+class Purchase(BaseSyncModel):
 	shop = models.ForeignKey("accounts.Shop", on_delete=models.CASCADE)
 	provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
 	currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
@@ -195,7 +196,7 @@ class ProviderPayment(models.Model):
 	amount_base = models.DecimalField(max_digits=12, decimal_places=2)
 	created_at = models.DateTimeField(auto_now_add=True)
 
-class CashBook(models.Model):
+class CashBook(BaseSyncModel):
 	shop = models.ForeignKey("accounts.Shop", on_delete=models.CASCADE)
 	date = models.DateField(verbose_name="date")
 	description = models.CharField(max_length=255)
@@ -206,7 +207,7 @@ class CashBook(models.Model):
 	reference_id = models.PositiveIntegerField()
 	created_at = models.DateTimeField(auto_now_add=True)
 
-class Sale(models.Model):
+class Sale(BaseSyncModel):
 	shop = models.ForeignKey("accounts.Shop", on_delete=models.CASCADE)
 	client = models.ForeignKey(Client, on_delete=models.CASCADE)
 	currency = models.ForeignKey(Currency, on_delete=models.PROTECT)

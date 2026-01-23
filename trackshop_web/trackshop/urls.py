@@ -4,7 +4,6 @@ from . import views
 app_name = "TrackShop"
 
 urlpatterns = [
-	path('', views.index, name='index'),
 	path('set_exchange_rate/', views.set_exchange_rate, name='set-exchange-rate'),
 	path('dashboard/', views.dashboard, name='dashboard'),
 	path('new_stock/', views.new_stock, name='new_stock'),

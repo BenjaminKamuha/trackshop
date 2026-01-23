@@ -38,9 +38,6 @@ from .models import (
 
 now = timezone.now()
 
-def index(request):
-	return render(request, "trackshop/index.html")
-
 def set_exchange_rate(request):
 
 	last_rate = ExchangeRate.objects.filter(shop=request.active_shop).last()
