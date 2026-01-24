@@ -1,0 +1,53 @@
+<div class="mt-5 flex justify-between gap-4">
+
+    <div class="border border-gray-600 flex-1 p-5 dark:shadow-2xl shadow-lg m-2">
+        <div class="flex justify-between">
+            <p class="text-gray-400 text-sm">{% include 'components/user.html' %}Profil</p>
+            <button>{% include 'components/pencil.html' %}</button>
+        </div>
+        <div class="text-md mt-2 text-green-500">
+            <p> Nom d'utilisateur:  <span class="ml-5 font-bold">{{ user }}</span></p>
+            <p>Email:  <span class="ml-5 font-bold">{{ user.email }}</span></p>
+            <p>Status du compte:  <span class="ml-5 font-bold">{{ user.email }}</span></p>
+
+            <p></p>
+             
+        </div>
+    </div>
+
+
+    <div class="border border-gray-600 flex-1 border border-gray-600 flex-1 p-5 dark:shadow-2xl shadow-lg m-2">
+        <div class="flex justify-between">
+            <p class="text-gray-400 text-sm">{% include 'components/home.html' %}Boutiques</p>
+            <button>{% include 'components/add.html' %}</button>
+        </div>
+        <div class="w- mt-2 flex items-center gap-4">
+            {% include "components/kpi_card.html" with title="Nombres" value=user.owned_shops.count %}
+            {% include "components/kpi_card_text.html" with title="Boutique active" value=request.active_shop %}
+            <button>{% include 'components/switch.html' %}</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="mt-5 flex justify-between gap-4">
+        <div class="border border-gray-600 flex-1 border border-gray-600 flex-1 p-5 dark:shadow-2xl shadow-lg m-2">
+            <div class="flex justify-between">
+                <p class="text-gray-400 text-sm">{% include 'components/currency.html' %}Taux d'échange</p>
+                <button>{% include 'components/pencil.html' %}</button>
+            </div>
+        </div>
+
+        <div class="border border-gray-600 flex-1 border border-gray-600 flex-1 p-5 dark:shadow-2xl shadow-lg m-2">
+            <div class="flex justify-between">
+                <p class="text-gray-400 text-sm">{% include 'components/home.html' %}Boutiques</p>
+                <button>{% include 'components/add.html' %}</button>
+            </div>
+        </div>
+</div>
+
+
+
+

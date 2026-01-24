@@ -1,7 +1,26 @@
-<h2>Créer un compte</h2>
+{% extends 'trackshop_base.html' %}
 
-<form action="" method="POST">
-     {% csrf_token %}
-     {{ form.as_p }}
-     <button type="submit">Créer le compte</button>
-</form>
+{% block nav%}
+          <h2 class="text-3xl">Bienvenue sur TS</h2>
+{% endblock %}
+
+{% block profil %}
+    <a href="{% url 'Account:login' %}">Se connecter</a>
+{% endblock %}
+
+{% block content %}
+     <div class="text-center">
+          
+          <p></p>
+     </div>
+     <div class="border flex p-10 justify-between rounded-lg" style="border: 1px solid violet; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+               <form class="" action="" method="POST">
+               {% csrf_token %}
+               {{ form.as_p }}
+               <div class="flex ">
+                    <button type="submit" class="px-2 bg-green-700 dark:bg-slate-700 text-white dark:text-slate-100 transition-200 rounded-lg">Créer le compte</button>
+               </div>
+          </form>
+          </div>
+     </div>
+{% endblock %}

@@ -2,8 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Shop(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, verbose_name="Nom de la boutique")
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="owned_shops")
+    rccm_number = models.CharField(max_length=200, blank=True, null=True, verbose_name="RCCM")
+    id_nat = models.CharField(max_length=200, blank=True, null=True, verbose_name="ID.NAT")
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     default_currency = models.ForeignKey("trackshop.Currency", null=True, blank=True, on_delete=models.PROTECT)
@@ -13,7 +15,6 @@ class Shop(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class UserProfile(models.Model):
     ROLE_CHOICES = (
@@ -33,4 +34,3 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.active_shop.name}"
-

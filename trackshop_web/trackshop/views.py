@@ -47,6 +47,7 @@ def set_exchange_rate(request):
 		rate = request.POST['rate']
 
 		ExchangeRate.objects.update_or_create(
+			shop=request.active_shop,
 			from_currency=Currency.objects.get(code=from_code),
 			to_currency=Currency.objects.get(code=to_code),
 			date=now.date(),
@@ -67,7 +68,9 @@ def get_today_rate(from_currency, to_currency):
 
 	except ExchangeRate.DoesNotExist:
 		raise ValidationError("Taux du jour non défini")
-
+		
+		
+@login_required
 def dashboard(request):
 	# nombre de stock
 	active_shop = request.active_shop
@@ -896,7 +899,7 @@ def search_client(request):
 
 def search_product(request):
     q = request.GET.get("product_search", "")
-    products = Product.objects.filter(shop=active_shop, name__icontains=q, stock__gt=0)
+    products = Product.objects.filter(shop=request.active_shop, name__icontains=q, stock__gt=0)
     return render(request, "trackshop/partials/sale/product_results.html", {
         "products": products,
     })
@@ -916,7 +919,6 @@ def select_product(request, product_pk):
 	product = Product.objects.get(pk=product_pk)
 
 	excluded_ids = [int(pid) for pid in selected_ids if pid.isdigit()]
-
 	if from_request == "sale_form":
 		return render(request, "trackshop/partials/sale/sale_row_selected.html", {
         	"product": product,
@@ -930,4 +932,3 @@ def select_product(request, product_pk):
 		})
 	
 	return HttpResponse("Error")
-

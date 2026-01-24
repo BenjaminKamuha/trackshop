@@ -1,4 +1,4 @@
-{% load static django_htmx django_browser_reload tailwind_tags %}
+{% load static django_htmx django_browser_reload %}
 
 <!DOCTYPE html>
 <html>
@@ -9,6 +9,7 @@
 	{% htmx_script %}
 	<script src="{% static 'trackshop/sale.js' %}" defer></script>
 	<script src="{% static 'trackshop/kpi.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'dist/output.css' %}">
 	<style>
 		.hidden {
 			display: none;
@@ -25,7 +26,6 @@
 			cursor: pointer;
 		}
 	</style>
-	{% tailwind_css %}
 </head>
 <body class="">
 	{% if debug %}
@@ -54,10 +54,6 @@
 		</div>
 		<div id="form" style="border: 1px solid rgb(5, 77, 55); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" class="backdrop-blur-lg">
 			{% block form %}
-                <div>
-                    <a href="" hx-get="{% url 'Account:register' %}" hx-target="#form" hx-swap="innerHTML" hx-trigger="click">S'inscrire</a>
-                    <a href="" hx-get="{% url 'Account:login' %}" hx-target="#form" hx-swap="innerHTML" hx-trigger="click" class="ml-10">Se connecter</a>
-                </div>
 			{% endblock %}
 		</div>
 	</main>

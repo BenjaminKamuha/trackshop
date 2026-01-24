@@ -1,0 +1,31 @@
+{% extends 'trackshop_base.html' %}
+
+{% block profil %}
+{% endblock %}
+
+{% block nav %}
+          <h2 class="text-center text-3xl">Créer votre première boutique TS</h2>
+{% endblock %}
+
+{% block content %}
+    <div class="text-center">
+        {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                    <div class="alert alert-danger">
+                        <span class="text-red-600">{{ message }}</span><a href="{% url 'Account:register' %}" class="text-blue-600">Mot de passe oublié ?</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="border flex-column p-10 rounded-lg" style="border: 1px solid violet; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <form action="{% url 'Account:create-shop' %}" method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="border rounded-lg">Créer la boutique</button>
+        </form>
+    </div>
+{% endblock %}
+

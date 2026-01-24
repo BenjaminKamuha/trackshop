@@ -1,8 +1,7 @@
-{% load static django_htmx django_browser_reload tailwind_tags %}
-
+{% load static django_htmx django_browser_reload %}
 
 <!DOCTYPE html>
-<html>
+<html class="light">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,14 +25,14 @@
 			cursor: pointer;
 		}
 	</style>
-	{% tailwind_css %}
+	<link rel="stylesheet" href="{% static 'dist/output.css' %}">
 </head>
-<body class="">
+<body class="bg-white dark:bg-gray-800 text-black dark:text-white">
 	{% if debug %}
 		{% django_browser_reload_script %}
 	{% endif %}
-	<header class="flex justify-between items-center w-full p-2 shadow-xl  backdrop-blur-lg pl-5 pr-5">
-			<span id="logo" class="border rounded-full p-3 text-3xl">Ts-{{ active_shop }}</span> 
+	<header class="flex justify-between fixed items-center w-full p-2 dark:shadow-2xl shadow-xl backdrop-blur-lg pl-5 pr-5">
+			<span id="logo" class="border flex items-center rounded-full p-2 w-15 h-15 text-5xl">Ts</span> 
 			<nav class="" >
 				{% block nav %}
 				    <ul id="main_nav" class="w-full">
@@ -44,22 +43,28 @@
 						<a href="{% url 'TrackShop:cash_book' %}" class="ml-10">Livre de caisse</a>
 						<a href="{% url 'TrackShop:inventory' %}" class="ml-10">Inventaire</a>
 						<a href="{% url 'TrackShop:client' %}" class="ml-10">Clients</a>
-
 					</ul>
 				{% endblock %}
 			</nav>
-
-			<div class="">
+			<div class="flex items-center">
 				{% block profil %}
-					{{ user }} <br>
-					<a href="{% url 'Account:logout' %}">Logout</a>
+					<div class="border-r-2 border-gray-600 pr-2">
+						<p class="text-lg">{{ request.user }}</p>
+						<p class="text-sm">{{ request.active_shop }}</p>
+					</div>
+					<div>
+						<a href="{% url 'Account:setting' %}"><img  
+						src="{% static 'img/setting.svg' %}" alt="Setting"
+						class="ml-2 w-6 dark:invert transition duration-300"
+						></a>
+					</div>
+					
+
 				{% endblock %}
 			</div>
-
-
 	</header>
 
-	<main style="display: flex;">
+	<main class="flex pt-15">
 			<div class="flex justify-between pt-10 w-60 p-2 shadow-xl h-169 ">
 				<div>
 					{% block sub_menu %}
@@ -80,4 +85,26 @@
 </body>
 <footer>
 </footer>
+
+
+	<script>
+(function () {
+  const root = document.documentElement
+  const btn = document.getElementById("theme-toggle")
+
+  // Charger le thème sauvegardé
+  const savedTheme = localStorage.getItem("theme")
+  if (savedTheme === "dark") {
+    root.classList.add("dark")
+    btn.textContent = "☀️ Light"
+  }
+
+  btn.addEventListener("click", () => {
+    const isDark = root.classList.toggle("dark")
+    localStorage.setItem("theme", isDark ? "dark" : "light")
+    btn.textContent = isDark ? "☀️ Light" : "� Dark"
+  })
+})()
+</script>
+
 </html>
