@@ -1,23 +1,8 @@
-{% extends 'base.html' %}
+<div class="text-left border shadow-2xl border-gray-600 p-10 rounded-lg">
 
-{% block nav %}
-    <p class="text-3xl">Bonjour! Bienvenue sur TrackShop</p>
- {% endblock %}
-
-{% block sub_menu %}
-    
-{% endblock %}
-
-{% block content %}
-{% endblock %}
-
-{% block form %}
-    <div class="text-left border shadow-2xl border-gray-600 p-10  rounded-lg">
-
-        {% if last_rate %}
-            <p class="mb-5 text-xl">Le taux d'échange est-il correct ?</p>
+    {% if last_rate %}
+        <p class="mb-5 text-xl">Modifier le taux du jour</p>
         {% else %}
-            <p class="mb-5 text-xl">Définir un taux d'échange pour commencer</p>
         {% endif %}
         <form action="{% url 'TrackShop:set-exchange-rate' %}" method="post">
             {% csrf_token %}
@@ -30,12 +15,14 @@
             <select class="" name="to_currency" id="">
                 <option value="USD">USD</option>
             </select><br>
-
+            <input type="hidden" name="from" value="setting">
             <label for="rate"></label>
+
             <input class="w-full h-9 lg:h-9  px-3 py-2 border border-gray-500 rounded-md mb-4 focus:outline-none focus:border-2 focus:border-green-600" type="number" step="0.000001" name="rate" placeholder="Taux du jour" autofocus required value="{{ last_rate.rate }}"><br>
             <div class="flex justify-around mt-10">
-            <button type="submit" class="px-2 w-30 rounded-lg bg-green-600 text-white dark:bg-green-600 text-slate-900 dark:text-slate-100 transition-200">Valider</button>
+                <a href="{% url 'Account:setting' %}">Annuler</a>
+            <button type="submit" class="px-2 w-30 rounded-lg bg-green-600 text-white dark:bg-green-600 text-slate-900 dark:text-slate-100 transition-200">Modifier</button>
+        </div>
         </form>
     </div>
-{% endblock %}
 

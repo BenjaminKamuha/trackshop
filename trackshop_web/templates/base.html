@@ -1,12 +1,13 @@
-{% load static django_htmx django_browser_reload %}
+{% load static django_htmx django_browser_reload tailwind_tags %}
 
 <!DOCTYPE html>
-<html class="light">
+<html>
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Trackshop</title>
 	{% htmx_script %}
+	{% tailwind_css %}
 	<script src="{% static 'trackshop/sale.js' %}" defer></script>
 	<script src="{% static 'trackshop/kpi.js' %}"></script>
 	<style>
@@ -25,13 +26,24 @@
 			cursor: pointer;
 		}
 	</style>
-	<link rel="stylesheet" href="{% static 'dist/output.css' %}">
+
+	<script>
+		(function () {
+		const theme = localStorage.getItem("theme");
+		if (theme === "dark") {
+			document.documentElement.classList.add("dark");
+		}
+		})();
+	</script>
+
 </head>
-<body class="bg-white dark:bg-gray-800 text-black dark:text-white">
+<body class="min-h-screen bg-white dark:bg-[#111827] text-black dark:text-white"
+      hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
 	{% if debug %}
 		{% django_browser_reload_script %}
 	{% endif %}
-	<header class="flex justify-between fixed items-center w-full p-2 dark:shadow-2xl shadow-xl backdrop-blur-lg pl-5 pr-5">
+	<header class="sticky top-0 z-50 w-full bg-white dark:bg-[#111827]
+               shadow-md backdrop-blur flex items-center justify-between px-4 py-2">
 			<span id="logo" class="border flex items-center rounded-full p-2 w-15 h-15 text-5xl">Ts</span> 
 			<nav class="" >
 				{% block nav %}
@@ -64,47 +76,58 @@
 			</div>
 	</header>
 
-	<main class="flex pt-15">
-			<div class="flex justify-between pt-10 w-60 p-2 shadow-xl h-169 ">
-				<div>
-					{% block sub_menu %}
-					{% endblock %}
+	<main class="flex flex-col lg:flex-row min-h-[calc(100vh-64px)]">
+			<aside class="w-full lg:w-64 bg-gray-100 dark:bg-gray-900
+						border-r border-gray-300 dark:border-gray-700
+						overflow-x-auto lg:overflow-y-auto">
+
+				{% block sub_menu %}{% endblock %}
+			</aside>
+
+			<div class="p-10 shadow-2xl lg:ml-5 w-full flex lg:flex-col max-h-[60vh] sm:max-h-[65vh] md:max-h-[87vh] flex-col overflow-y-auto lg:overflow-y-auto mt-10">
+				{% block content %}
+				{% endblock %}	
+			</div>
+
+			<div id="form-modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+					<!-- Fond -->
+					<div id="form-overlay" class="absolute inset-0 bg-black/30 dark:bg-black/40 backdrop-blur-sm md:backdrop-blur-md"></div>
+
+				<!-- Contenu -->
+				<div id="form-content" class="relative bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-lg shadow-2xl w-full max-w-md mx-auto">
+					{% block form %}{% endblock %}
+					<!-- Bouton de fermeture -->
+					<button id="form-close" class="absolute top-2 right-2 text-gray-600 dark:text-gray-300 hover:text-red-500">&times;</button>
 				</div>
 			</div>
-		<div class="w-full p-10 0 15px 0 15px">
-			{% block content %}
-			{% endblock %}	
-		</div>
-		<div id="form" style="border: 1px solid violet; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;" class="backdrop-blur-lg">
-			{% block form %}
-			{% endblock %}
-		</div>
+			
 	</main>
-	{% block scripts %}
-	{% endblock %}
-</body>
-<footer>
-</footer>
 
 
-	<script>
-(function () {
-  const root = document.documentElement
-  const btn = document.getElementById("theme-toggle")
+	
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const modal = document.getElementById("form-modal");
+  const overlay = document.getElementById("form-overlay");
+  const closeBtn = document.getElementById("form-close");
 
-  // Charger le thème sauvegardé
-  const savedTheme = localStorage.getItem("theme")
-  if (savedTheme === "dark") {
-    root.classList.add("dark")
-    btn.textContent = "☀️ Light"
+  // Fonction pour ouvrir le modal
+  window.openFormModal = function() {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
   }
 
-  btn.addEventListener("click", () => {
-    const isDark = root.classList.toggle("dark")
-    localStorage.setItem("theme", isDark ? "dark" : "light")
-    btn.textContent = isDark ? "☀️ Light" : "� Dark"
-  })
-})()
-</script>
+  // Fonction pour fermer le modal
+  function closeModal() {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
 
-</html>
+  // Fermer en cliquant sur l’overlay ou sur la croix
+  overlay.addEventListener("click", closeModal);
+  closeBtn.addEventListener("click", closeModal);
+});
+</script>
+	
+
+</body>

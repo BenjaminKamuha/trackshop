@@ -40,10 +40,12 @@ INSTALLED_APPS = [
     'django_browser_reload',
     'rest_framework',
     'rest_framework.authtoken',
+    'tailwind',
+    'theme',
     'trackshop',
     'accounts',
 ]
-
+ 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,6 +79,7 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'trackshop_web.wsgi.application'
 
 
@@ -90,6 +93,8 @@ DATABASES = {
     }
 }
 
+TAILWIND_APP_NAME = 'theme'
+INTERNAL_IPS = ["127.0.0.1"]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

@@ -1,0 +1,14 @@
+<div class="border border-gray-600 p-10 w-100 rounded-lg">
+    <span class="text-xl pb-10">Changer de boutique</span>
+    
+    <form action="{% url 'Account:switch-shop'%}" method="POST" class="mt-10">
+        {% csrf_token %}
+        {{ form }}
+        <div class="flex justify-around mt-10">
+            <a href="{% url 'Account:setting'%} ">Annuler</a>
+            <button type="submit" id="theme-toggle" class="px-2  w-30 rounded-lg bg-green-600 text-white dark:bg-green-600 text-slate-900 dark:text-slate-100 transition-200">Activer</button>
+        </div>
+        
+    </form>
+</div>
+

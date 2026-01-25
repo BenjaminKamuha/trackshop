@@ -16,6 +16,12 @@ class Shop(models.Model):
     def __str__(self):
         return self.name
 
+    def get_status(self):
+        if self.is_active:
+            return "Approuvé"
+        else:
+            return "Suspendu"
+
 class UserProfile(models.Model):
     ROLE_CHOICES = (
         ("owner", "Propriétaire"),

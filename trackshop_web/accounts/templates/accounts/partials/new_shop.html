@@ -1,0 +1,13 @@
+<div class="text-left border shadow-2xl border-gray-600 p-10 rounded-lg">
+
+    <span class="text-xl">Ajouter une boutique</span>
+    
+    <form action="{% url 'Account:create-shop' %}" method="POST" class="mt-5 text-left">
+        {% csrf_token %}
+        {{ form }}
+        <div class="flex justify-around mt-10">
+            <a href="{% url 'Account:setting'%} ">Annuler</a>
+            <button type="submit" id="theme-toggle" class="px-2  w-30 rounded-lg bg-green-600 text-white dark:bg-green-600 text-slate-900 dark:text-slate-100 transition-200">Ajouter</button>
+        </div>
+    </form>
+</div>

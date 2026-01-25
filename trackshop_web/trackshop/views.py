@@ -38,10 +38,12 @@ from .models import (
 
 now = timezone.now()
 
+@login_required
 def set_exchange_rate(request):
-
+	source = request.GET.get("from")
 	last_rate = ExchangeRate.objects.filter(shop=request.active_shop).last()
 	if request.method == "POST":
+		source = request.POST.get("from")
 		from_code = request.POST['from_currency']
 		to_code = request.POST['to_currency']
 		rate = request.POST['rate']
@@ -53,14 +55,18 @@ def set_exchange_rate(request):
 			date=now.date(),
 			defaults={"rate": rate}
 		)
-		print("Taux enregistré")
-		return redirect ("TrackShop:dashboard")
+		if source == "setting":
+			return redirect("Account:setting")
 
+		return redirect("TrackShop:dashboard")
+	if source == "setting":
+		return render(request, "accounts/partials/set_exchange_rate.html", {'last_rate': last_rate })
 	return render(request, "trackshop/set_exchange_rate.html", {'last_rate': last_rate })
 
-def get_today_rate(from_currency, to_currency):
+def get_today_rate(shop, from_currency, to_currency):
 	try:
 		return ExchangeRate.objects.get(
+			shop=shop,
 			from_currency=from_currency,
 			to_currency=to_currency,
 			date=now.date()
@@ -91,6 +97,7 @@ def dashboard(request):
 		"active_shop": active_shop,
 		})
 
+@login_required
 def new_stock(request):
 	source = request.GET.get("from")
 	if request.method == "POST":
@@ -113,7 +120,7 @@ def new_stock(request):
 	stock_form = StockForm()
 	return render(request, "trackshop/new_stock.html", context={"stock_form": stock_form, "source": source})
 
-
+@login_required
 def new_client(request):
 	source = request.GET.get("from")
 	if request.method == "POST":
@@ -144,6 +151,7 @@ def new_client(request):
 	client_form = ClientForm()
 	return render(request, "trackshop/new_client.html", context={"client_form": client_form, "source": source})
 
+@login_required
 def new_provider(request):
 	if request.method == "POST":	
 		name = request.POST.get('provider_name')
@@ -160,18 +168,19 @@ def new_provider(request):
 		
 	return render(request, 'trackshop/partials/purchase/new_provider.html')
 	
-
+@login_required
 def client(request):
 	clients = Client.objects.filter(shop=request.active_shop)
 	return render(request, "trackshop/client.html", context={"clients": clients})
 
+@login_required
 def load_client_sub_menu(request, client_pk):
 	client = get_object_or_404(Client, pk=client_pk)
 	return render(request, "trackshop/partials/client/load_client_sub_menu.html", context={
 		"client": client,
 	})
 
-
+@login_required
 def client_general_info(request, client_pk):
 	client = get_object_or_404(Client, pk=client_pk)
 
@@ -180,11 +189,12 @@ def client_general_info(request, client_pk):
 	})
 
 
-
+@login_required
 def client_commercial_info(request, client_pk):
 
 	return render(request, "trackshop/partials/client/commercial_info.html", context={})
 
+@login_required
 def sales_history(request, client_pk):
 	client = get_object_or_404(Client, pk=client_pk)
 	client_sales = Sale.objects.filter(client=client)
@@ -194,27 +204,32 @@ def sales_history(request, client_pk):
 		
 	return render(request, "trackshop/partials/client/sales_history.html", context={"client_sales": client_sales, "client":client})
 
+@login_required
 def client_sales_info(request, client_pk):
 
 	return render(request, "trackshop/partials/client/sales_info.html", context={})
 
+@login_required
 def client_financial_info(request, client_pk):
-
 	return render(request, "trackshop/partials/client/financial_info.html", context={})
 
+@login_required
 def client_statistics(request, client_pk):
 
 	return render(request, "trackshop/partials/client/statistics.html", context={})
 
+@login_required
 def fallow_client(request, client_pk):
 
 	return render(request, "trackshop/partials/client/fallow.html", context={})
 
+@login_required
 def stock(request):
 	stocks = Stock.objects.filter(shop=request.active_shop)
 	last_access_stock = Stock.objects.filter(shop=request.active_shop).order_by("-last_access_date").first()
 	return render(request, "trackshop/stock.html", context={"stocks": stocks, "stock": last_access_stock})
 
+@login_required
 def load_stock_product(request, stock_pk):
 	stock = Stock.objects.get(pk=stock_pk)
 	stock.last_access_date = timezone.now()
@@ -227,6 +242,7 @@ def load_stock_product(request, stock_pk):
 		pass
 	return render(request, "trackshop/partials/product/partial_product.html", context={"products": products, "stock": stock})
 
+@login_required
 def new_product(request, stock_pk):
 	stock = get_object_or_404(Stock, pk=stock_pk)
 	if request.method == 'POST':
@@ -243,6 +259,7 @@ def new_product(request, stock_pk):
 	product_form = ProductForm()
 	return render(request, "trackshop/new_product.html", context={"product_form": product_form, "stock": stock})
 
+@login_required
 def product_detail(request, product_pk):
 	product = get_object_or_404(Product, pk=product_pk)
 	evaliable_quantity = product.quantity
@@ -309,10 +326,12 @@ def product_detail(request, product_pk):
 		})
 
 
+@login_required
 def sale(request):
 	return render(request, "trackshop/sale.html", context={})
 
 
+@login_required
 def cash_book(request):
 	if request.method == "POST":
 		currency_code = request.POST.get('currency')
@@ -346,6 +365,7 @@ def cash_book(request):
 		})
 	return render(request, "trackshop/cashbook.html", {})
 
+@login_required
 def cash_book_pdf(request, currency_code, date):
 	currency = Currency.objects.get(code=currency_code)
 	entries = CashBook.objects.filter(
@@ -381,6 +401,7 @@ def cash_book_pdf(request, currency_code, date):
 	
 
 @transaction.atomic
+@login_required
 def create_inventory(request, start_date, end_date, inv_type):
 	# Création de l'objet inventaire
 	inventory = Inventory.objects.create(
@@ -453,11 +474,13 @@ def create_inventory(request, start_date, end_date, inv_type):
 	inventory.save() 
 
 
+@login_required
 def inventory(request):
 	inventories = Inventory.objects.filter(shop=request.active_shop)
 	last_access__inventory = Inventory.objects.filter(shop=request.active_shop).order_by("-last_access_date").first()
 	return render(request, "trackshop/inventory.html", context={"inventory": last_access__inventory, "inventories": inventories})
 
+@login_required
 def new_inventory_view(request):
 	if request.method == "POST":
 		start_date = request.POST['start_date']
@@ -471,10 +494,12 @@ def new_inventory_view(request):
 
 	return render(request, "trackshop/partials/inventory/inventory_form.html", {})
 
+@login_required
 def load_inventory(request, inv_pk):
 	inventory = get_object_or_404(Inventory, pk=inv_pk)
 	return render(request, "trackshop/partials/inventory/inventory_view.html", {'inventory':inventory})
 
+@login_required
 def inventory_detail(request, inventory_pk):
 	inventory = get_object_or_404(Inventory, pk=inventory_pk)
 	inventory.last_access_date = now
@@ -508,6 +533,7 @@ def inventory_detail(request, inventory_pk):
 		"inventory": inventory
 	})
 
+@login_required
 def inventory_detail_pdf(request, inventory_pk):
 
 	inventory = get_object_or_404(Inventory, pk=inventory_pk)
@@ -525,11 +551,12 @@ def inventory_detail_pdf(request, inventory_pk):
 	return response
 
 	
-	
+@login_required
 def history(request):
 	sales = Sale.objects.filter(shop=request.active_shop).order_by("-created_at")
 	return render(request, "trackshop/history.html", context={"sales": sales})
 
+@login_required
 def purchase_history(request):
 	purchases = Purchase.objects.filter(shop=request.active_shop).order_by("-created_at")
 	return render(request, "trackshop/purchase_history.html", {
@@ -537,9 +564,11 @@ def purchase_history(request):
 	})
 
 
+@login_required
 def add_payment(request, sale_id):
 	sale = get_object_or_404(Sale, pk=sale_id)
 	rate = get_today_rate(
+		shop=request.active_shop,
 		from_currency=Currency.objects.get(code="CDF"),
 		to_currency=Currency.objects.get(code="USD")
 	)
@@ -566,7 +595,7 @@ def add_payment(request, sale_id):
 		"rate": rate
 	})
 
-
+@login_required
 def provider_payment(request, purchase_pk):
 	purchase = get_object_or_404(Purchase, pk=purchase_pk)
 	
@@ -593,14 +622,17 @@ def provider_payment(request, purchase_pk):
 		'rate': rate	
 	})
 
+@login_required
 def payment_succes(request):
 	return render(request, "trackshop/payment_success.html")
 
+@login_required
 def sale_invoice(request, sale_id):
 	sale = Sale.objects.get(pk=sale_id)
 	return render(request, "trackshop/sale_invoice.html", {"sale": sale})
 
 
+@login_required
 def sale_invoice_pdf(request, sale_id):
 	sale = get_object_or_404(Sale, pk=sale_id)
 	is_cdf = sale.currency.code == 'CDF'
@@ -614,9 +646,11 @@ def sale_invoice_pdf(request, sale_id):
 	response['Content-Disposition'] = f'inline; filename="facture_{sale.id}.pdf"'
 	return response
 
+@login_required
 def sale_create(request, message=None):
 	
 	rate = get_today_rate(
+		shop=request.active_shop,
 		from_currency=Currency.objects.get(code="CDF"),
 		to_currency=Currency.objects.get(code="USD")
 	)
@@ -628,6 +662,8 @@ def sale_create(request, message=None):
 		"message": message,
 	})
 
+
+@login_required
 def sale_add_row(request):
 	selected_ids = request.GET.getlist('product_id[]')
 	products = Product.objects.exclude(id__in=selected_ids)
@@ -636,11 +672,13 @@ def sale_add_row(request):
 	return render(request, "trackshop/partials/sale/sale_row.html", {
 		"products": products
 	})  
-
+	
 @transaction.atomic
+@login_required
 def create_purchase(request):
 
 	rate = get_today_rate(
+		shop=request.active_shop,
 		from_currency=Currency.objects.get(code="CDF"),
 		to_currency=Currency.objects.get(code="USD")
 	)
@@ -739,12 +777,14 @@ def create_purchase(request):
 	})
 
 
+@login_required
 def purchase_detail(request, purchase_pk):
 
 	purchase = get_object_or_404(Purchase, pk=purchase_pk)
 	return render(request, "trackshop/purchase_detail.html", {"purchase": purchase})
 
 @transaction.atomic
+@login_required
 def sale_save(request):
 
 	currency_code = request.POST.get("currency") # Récuprération ddu code de la devise de la vente
@@ -849,6 +889,7 @@ def sale_save(request):
 
 
 @transaction.atomic
+@login_required
 def return_product(sale_item, qty):
 	if qty > sale_item.quantity:
 		raise ValidationError("Retour invalide")
@@ -872,6 +913,7 @@ def return_product(sale_item, qty):
 		quantity = qty
 	)
 
+@login_required
 def save_return(request, item_pk):
 	item = get_object_or_404(SaleItem, pk=item_pk)
 	if request.method == "POST":
@@ -881,7 +923,7 @@ def save_return(request, item_pk):
 
 	return render(request, "trackshop/partials/sale/product_return.html", {"item": item})
 
-
+@login_required
 def search_client(request):
 	request_from = request.GET.get('from')
 	search_input = request.GET.get('client_search', '')
@@ -897,6 +939,7 @@ def search_client(request):
 		'from_client': from_client,
 	})
 
+@login_required
 def search_product(request):
     q = request.GET.get("product_search", "")
     products = Product.objects.filter(shop=request.active_shop, name__icontains=q, stock__gt=0)
@@ -904,6 +947,7 @@ def search_product(request):
         "products": products,
     })
 
+@login_required
 def search_provider(request):
 	search_input = request.GET.get('provider_search')
 	providers = Provider.objects.filter(shop=request.active_shop, name__icontains=search_input)[:10]
@@ -912,6 +956,7 @@ def search_provider(request):
 		"search_input": search_input,
 	})
 
+@login_required
 def select_product(request, product_pk):
 	selected_ids = request.POST.getlist("prod_selected[]")
 	from_request = request.POST.get('from_request')
@@ -930,5 +975,4 @@ def select_product(request, product_pk):
 			"product": product,
 			"nb_product": len(excluded_ids)
 		})
-	
 	return HttpResponse("Error")

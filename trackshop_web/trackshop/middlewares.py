@@ -11,9 +11,9 @@ class ExchangeRateRequiredMiddleware:
     Bloque les opérations commerciales si le taux du jour n'est pas défini
     """
     PROTECTED_PATHS = [
-        '/dashboard/',
-        '/sale/new/'
-        '/payment/',
+        '/trackshop/dashboard/',
+        '/trackshop/sale/new/',
+        '/trackshop/payment/',
     ]
 
     def __init__(self, get_response):
