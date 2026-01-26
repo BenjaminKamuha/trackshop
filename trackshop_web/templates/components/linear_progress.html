@@ -1,10 +1,12 @@
-<div class="progress-container bg-[#111827] rounded-xl w-full p-3">
+<div class="progress-container rounded-xl w-full p-3 bg-gray-200 dark:bg-gray-800">
+  <!-- En-tête avec label et compteur -->
   <div class="flex justify-between text-sm mb-2">
-    <span class="text-gray-400">{{ label }}</span>
-    <span class="text-white" data-counter="{{ value }}">0%</span>
+    <span class="text-gray-600 dark:text-gray-400">{{ label }}</span>
+    <span class="text-gray-900 dark:text-white" data-counter="{{ value }}">0%</span>
   </div>
 
-  <div class="w-full h-2 sm:h-4 md:h-3 bg-gray-700 rounded overflow-hidden">
+  <!-- Barre de progression -->
+  <div class="w-full h-2 sm:h-4 md:h-3 rounded overflow-hidden bg-gray-300 dark:bg-gray-700">
     <div
       class="progress-bar h-2 sm:h-4 md:h-3 rounded transition-[width] duration-700 ease-out"
       style="width: 0%; background-color: {{ color }};"

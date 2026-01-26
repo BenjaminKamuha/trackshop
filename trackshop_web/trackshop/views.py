@@ -11,6 +11,8 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from decimal import Decimal
 from random import choice
+from datetime import timedelta
+import json
 from .models import (
 	Stock, 
 	Client, 
@@ -74,7 +76,17 @@ def get_today_rate(shop, from_currency, to_currency):
 
 	except ExchangeRate.DoesNotExist:
 		raise ValidationError("Taux du jour non défini")
-		
+
+
+def calculate_progress(current, total):
+	"""
+		Calcule le pourcentage de progression pour une barre de progression.
+		Evite la division par zéro;
+	"""
+	if total == 0:
+		return 0
+
+	return round((currency / total * 100, 2))
 		
 @login_required
 def dashboard(request):
@@ -84,18 +96,108 @@ def dashboard(request):
 	stocks = Stock.objects.filter(shop=request.active_shop)
 	products = Product.objects.filter(shop=request.active_shop)
 	clients = Client.objects.filter(shop=request.active_shop)
-	todaySales = Sale.objects.filter(shop=request.active_shop, created_at=today)
+	
 	providers = Provider.objects.filter(shop=request.active_shop)
+
+	todaySales = Sale.objects.filter(shop=request.active_shop, created_at=today
+		).aggregate(total=Sum('total_amount'))['total'] or 0
+
+	# Graphic1
+	last_7_days = [now - timedelta(days=i) for i in range(6, -1, -1)]
+
+	revenue_labels = []
+	revenue_data = []
+
+	for day in last_7_days:
+		revenue_labels.append(day.strftime("%d %b"))
+		
+		total = Sale.objects.filter(shop=request.active_shop, created_at__date=day
+		).aggregate(total=Sum('total_amount_base'))['total'] or 0
+
+		revenue_data.append(total)
+
+	# Graphic2
+	movement_labels = []
+	movement_in = []
+	movement_out = []
+
+	for day in last_7_days:
+		movement_labels.append(day.strftime("%d %b"))
+		
+		#Total mouvements entrants (in)
+		total_in = StockMovement.objects.filter(
+			stock__shop=request.active_shop, 
+			movement_type='in',
+			created_at__date=day
+		).aggregate(total=Sum('quantity'))['total'] or 0
+		movement_in.append(total_in)
+
+		#Total mouvements sortants (out)
+		total_out = StockMovement.objects.filter(
+			stock__shop=request.active_shop,
+			movement_type='out',
+			created_at__date=day
+		).aggregate(total=Sum('quantity'))['total'] or 0 
+		movement_out.append(total_out)
+
+	
+	#Produit à rupture
+	total_products = Product.objects.filter(shop=request.active_shop).count()
+	ruptured_products = Product.objects.filter(shop=request.active_shop,
+			quantity__lte=0
+		).count()
+
+	rupture_percentage = 0
+	if total_products > 0:
+		rupture_percentage = round(
+			(ruptured_products / total_products) * 100, 2
+		)
+	
+	total_sales = Sale.objects.filter(shop=request.active_shop
+		).aggregate(total=Sum('total_amount_base'))['total'] or 0
+
+	sale_credit = Sale.objects.filter(shop=request.active_shop, is_credit=True
+		).aggregate(total=Sum('paid_amount_base'))['total'] or 0
+
+	total_purchases = Purchase.objects.filter(shop=request.active_shop
+		).aggregate(total=Sum('total_amount_base'))['total'] or 0
+
+	purchase_credit = Purchase.objects.filter(shop=request.active_shop, is_credit=True
+		).aggregate(total=Sum('total_amount_base'))['total'] or 0
+
+	last_sales = Sale.objects.filter(shop=request.active_shop).order_by("-created_at")[:10]
+
+	purchase_credit_percent = 0
+	if total_purchases > 0:
+		purchase_credit_percent = round((sale_credit /  total_purchases) * 100, 2)
+	
+	sale_credit_percent = 0	
+	if total_sales > 0:
+		sale_credit_percent = round((sale_credit / total_sales) * 100, 2 )
+	
+	
+	#revenue_labels = ["01 Jan", "02 Jan", "03 Jan", "04 Jan"]
+	#revenue_data = [1200, 1500, 1800, 1500]
 
 	return render(request, "trackshop/dashboard.html", context={
 		"stocks": stocks,
-		"products": products,
 		"clients": clients,
 		"todaySales": todaySales,
 		"providers": providers,
 		"user": request.user,
 		"active_shop": active_shop,
-		})
+		"sale_credit": sale_credit,
+		"purchase_credit": purchase_credit,
+		"purchase_credit_percent": purchase_credit_percent,
+		"sale_credit_percent": sale_credit_percent, 
+		"revenue_labels": json.dumps(revenue_labels),
+        "revenue_data": json.dumps(revenue_data),
+		"last_sales": last_sales,
+		"stock_labels": movement_labels,
+		"stock_in": movement_in,
+		"stock_out": movement_out,
+		"rupture_percentage": rupture_percentage,
+	})
 
 @login_required
 def new_stock(request):

@@ -1,42 +1,181 @@
 {% extends 'base.html' %}
-
+{% load static %}
 
 {% block sub_menu %}
     <h1 class="text-3xl">Dashboard</h1>
 {% endblock %}
 
 {% block content %}
+
     <div id="kpi" style="display: flex; flex-wrap: wrap; justify-content: space-between;">
         {% include "components/kpi_card.html" with title="Stock" value=stocks.count %}
 
-        {% include "components/kpi_card.html" with title="Ventes aujourd'hui" value=todaySales.count %}
+        {% include "components/kpi_card.html" with title="Ventes aujourd'hui ($)" value=todaySales %}
 
-        {% include "components/kpi_card.html" with title="Crédits" value=debts.count %}
+        {% include "components/kpi_card.html" with title="Crédits ($)" value=sale_credit %}
 
         {% include "components/kpi_card.html" with title="Client" value=clients.count %}
 
-        {% include "components/kpi_card.html" with title="Produits" value=products.count %}
-
-        {% include "components/kpi_card.html" with title="fournisseurs" value=providers.count %}
+        {% include "components/kpi_card.html" with title="Crédit fournisseur ($)" value=purchase_credit %}
 
     </div>
 
-    <div class="flex wrap justify-between mt-5 h-50">
-            <div class="rounded-xl p-5 shadow-lg m-2 flex">
-                <span>Evolution du chiffre d'affaire</span>
-            </div>
-            <div class="rounded-xl p-5 shadow-lg m-2 flex">
-                <span>Evolution du chiffre d'affaire</span>
+<div class="p-5 space-y-6 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+    <div class="flex gap-10">
+       {% include "components/linear_progress.html" with label="Crédit client" value=sale_credit_percent color="blue" %}
+       {% include "components/linear_progress.html" with label="Crédit fournisseur" value=purchase_credit_percent color="green" %}
+
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-5">
+        <!-- Graphique -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                Évolution du chiffre d'affaires
+            </p>
+            <canvas id="chartRevenue" class="w-full" height="200"></canvas>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                Status stock
+            </p>
+
+            <div class="flex justify-center mt-10">
+            {% include "components/circular_pb.html" with label="Tasks" value=rupture_percentage color="#fffabc" %}
+
             </div>
 
-            <div class="rounded-xl p-5 shadow-lg m-2 flex">
-                <span>Repartition des ventes par produit</span>
-            </div>
+        </div>
+
+                <!-- Graphique -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                Mouvement du stock
+            </p>
+            <canvas id="stockMovement" class="w-full" height="200"></canvas>
+        </div>
+        
+    
     </div>
+
+    <!-- ===================== -->
+    <!-- TABLE SECTION -->
+    <!-- ===================== -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 overflow-x-auto">
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">Dernières ventes</p>
+        <table class="min-w-full table-auto">
+            <thead class="bg-gray-200 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-2 text-left text-sm">Client</th>
+                    <th class="px-4 py-2 text-left text-sm">Produit</th>
+                    <th class="px-4 py-2 text-left text-sm">Montant</th>
+                    <th class="px-4 py-2 text-left text-sm">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in last_sales %}
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                    <td class="px-4 py-2 text-sm">{{ sale.client }}</td>
+                    <td class="px-4 py-2 text-sm">{{ sale.product }}</td>
+                    <td class="px-4 py-2 text-sm">{{ sale.amount }}$</td>
+                    <td class="px-4 py-2 text-sm">{{ sale.date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
     {% block form %}
     {% endblock %}
-{% endblock %}in
 
+    <!-- base.html -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("chartRevenue");
+  if (!canvas) return;
+  const labels = {{ revenue_labels|safe }};
+  const data = {{ revenue_data|safe }}.map(Number);
+
+  // Détruire l'ancien chart si présent
+  const oldChart = Chart.getChart(canvas);
+  if (oldChart) oldChart.destroy();
+
+  new Chart(canvas.getContext("2d"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        data: data,
+        fill: true,
+        backgroundColor: "rgba(59,130,246,0.2)",
+        borderColor: "#3b82f6",
+        borderWidth: 2,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: false, // 🔹 IMPORTANT : désactive responsive pour l'animation
+      animation: {
+        duration: 3000,
+        easing: "easeOutQuart"
+      },
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v + " $" } }
+      }
+    }
+  });
+});
+
+</script>
+
+{{ stock_labels|json_script:"stock-labels" }}
+{{ stock_in|json_script:"stock-in" }}
+{{ stock_out|json_script:"stock-out" }}
+
+
+<canvas id="stockChart" class="w-full h-64"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = JSON.parse(document.getElementById('stock-labels').textContent);
+const stockIn = JSON.parse(document.getElementById('stock-in').textContent);
+const stockOut = JSON.parse(document.getElementById('stock-out').textContent);
+
+const ctx = document.getElementById('stockMovement').getContext('2d');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Entrées',
+                data: stockIn,
+                fill: true,
+                tension: 0.4,
+            },
+            {
+                label: 'Sorties',
+                data: stockOut,
+                fill: true,
+                tension: 0.4,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+</script>
+
+{% endblock %}
 
 
 
