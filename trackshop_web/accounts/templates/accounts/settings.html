@@ -2,29 +2,36 @@
 {% load static %}
 
 {% block sub_menu %}
-    <h1 class="text-3xl mt-5 mb-5">Settings</h1><br>
+<h1 class="text-3xl mb-5">Settings</h1>
 
+<div class="mb-5">
+    <div class="flex items-center justify-around gap-3">
+        <span class="flex items-center gap-2">
+            Apparence
+            {% include 'components/view.html' %}
+        </span>
 
-
-    <div class="mb-5">
-        <span class="flex justify-between mb-5">Apparence {% include 'components/view.html' %}
-        </span> 
-        
-        <div class="ml-5">
-            <button id="theme-toggle" class="text-left px-2 py-2 w-30 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 transition-200">
-            � Dark
-            </button>
-        </div>
+        <!-- Toggle -->
+        <button id="toggle_mode"
+            class="w-12 h-4 sm:h-5 bg-gray-300 dark:bg-gray-600 
+                   rounded-full relative transition-colors
+                   flex items-center">
+            
+            <div id="toggle_circle"
+                class="w-4 h-4 sm:w-5 sm:h-5
+                       rounded-full bg-white shadow-md
+                       transition-transform
+                       absolute left-0.5">
+            </div>
+        </button>
     </div>
+</div>
 {% endblock %}
 
 {% block content %}
-    <div id="setting" class="mt-5">
-        <div id="title" class="text-3xl border-b-2 border-gray-600 ">Générale</div>
+    <div id="setting" class="">
+        <div id="title" class="text-2xl border-b-2 border-gray-600 ">Générale</div>
         {% include "accounts/partials/general_settings.html" %}
     </div>
-
-
-
 {% endblock %}
 

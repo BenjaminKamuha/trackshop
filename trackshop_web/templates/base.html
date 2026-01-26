@@ -1,7 +1,7 @@
 {% load static django_htmx django_browser_reload tailwind_tags %}
 
 <!DOCTYPE html>
-<html>
+<html class="">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,8 +10,9 @@
 	{% tailwind_css %}
 	<script src="{% static 'trackshop/sale.js' %}" defer></script>
 	<script src="{% static 'trackshop/kpi.js' %}"></script>
+	<script src="{% static 'js/alpine.min.js' %}"></script>
 	<style>
-		.hidden {
+		.hidden_d {
 			display: none;
 		}
 		.total-box { margin-top: 15px; }
@@ -28,105 +29,231 @@
 	</style>
 
 	<script>
-		(function () {
-		const theme = localStorage.getItem("theme");
-		if (theme === "dark") {
-			document.documentElement.classList.add("dark");
-		}
-		})();
-	</script>
+(function () {
+  const theme = localStorage.getItem('theme');
+
+  if (
+    theme === 'dark' ||
+    (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  ) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+})();
+</script>
+
 
 </head>
+
 <body class="min-h-screen bg-white dark:bg-[#111827] text-black dark:text-white"
       hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
 	{% if debug %}
 		{% django_browser_reload_script %}
 	{% endif %}
-	<header class="sticky top-0 z-50 w-full bg-white dark:bg-[#111827]
-               shadow-md backdrop-blur flex items-center justify-between px-4 py-2">
-			<span id="logo" class="border flex items-center rounded-full p-2 w-15 h-15 text-5xl">Ts</span> 
-			<nav class="" >
-				{% block nav %}
-				    <ul id="main_nav" class="w-full">
-						<a href="{% url 'TrackShop:dashboard' %}">Dashboard</a>
-						<a href="{% url 'TrackShop:stock' %}" class="ml-10">Stock</a>
-						<a href="{% url 'TrackShop:create-purchase' %}" class="ml-10">Achat</a>
-						<a href="{% url 'TrackShop:sale-create' %}" class="ml-10">Vente</a>
-						<a href="{% url 'TrackShop:cash_book' %}" class="ml-10">Livre de caisse</a>
-						<a href="{% url 'TrackShop:inventory' %}" class="ml-10">Inventaire</a>
-						<a href="{% url 'TrackShop:client' %}" class="ml-10">Clients</a>
-					</ul>
-				{% endblock %}
-			</nav>
-			<div class="flex items-center">
-				{% block profil %}
-					<div class="border-r-2 border-gray-600 pr-2">
-						<p class="text-lg">{{ request.user }}</p>
-						<p class="text-sm">{{ request.active_shop }}</p>
-					</div>
-					<div>
-						<a href="{% url 'Account:setting' %}"><img  
-						src="{% static 'img/setting.svg' %}" alt="Setting"
-						class="ml-2 w-6 dark:invert transition duration-300"
-						></a>
-					</div>
-					
 
-				{% endblock %}
-			</div>
-	</header>
+	{% load static %}
+{% load tailwind_tags %}
+{% load static %}
+{% load tailwind_tags %}
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script> -->
+ 
+<!-- HEADER -->
+<header class="bg-white dark:bg-[#111827] shadow sticky top-0 z-50 shadow-2xl">
+    <div class="max-w-7xl mx-auto px-4 flex items-center h-16 justify-between">
+
+        <!-- LOGO -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="w-10 h-10 rounded-full border flex items-center justify-center font-bold">Ts</span>
+            <span class="hidden sm:block font-semibold">TrackShop</span>
+        </div>
+
+		
+        <!-- DESKTOP NAV -->
+        <nav class="hidden md:flex flex-1 justify-center">
+            <ul class="flex gap-6 text-sm font-medium">
+                <li><a href="{% url 'TrackShop:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}text-green-600{% endif %} hover:text-green-500 transition-colors">Dashboard</a></li>
+                <li><a href="{% url 'TrackShop:stock' %}" class="{% if request.resolver_match.url_name == 'stock' %}text-green-600{% endif %} hover:text-green-500 transition-colors">Stock</a></li>
+                <li><a href="{% url 'TrackShop:create-purchase' %}" class="{% if request.resolver_match.url_name == 'create-purchase' %}text-green-600{% endif %} hover:text-green-500 transition-colors">Achat</a></li>
+                <li><a href="{% url 'TrackShop:sale-create' %}" class="{% if request.resolver_match.url_name == 'sale-create' %}text-green-600{% endif %} hover:text-green-500 transition-colors">Vente</a></li>
+                <li><a href="{% url 'TrackShop:cash_book' %}" class="{% if request.resolver_match.url_name == 'cash_book' %}text-green-600{% endif %} hover:text-green-500 transition-colors">Caisse</a></li>
+                <li><a href="{% url 'TrackShop:inventory' %}" class="{% if request.resolver_match.url_name == 'inventory' %}text-green-600{% endif %} hover:text-green-500 transition-colors">Inventaire</a></li>
+                <li><a href="{% url 'TrackShop:client' %}" class="{% if request.resolver_match.url_name == 'client' %}text-green-600{% endif %} hover:text-green-500 transition-colors">Clients</a></li>
+            </ul>
+        </nav>
+
+
+        <!-- PROFILE DESKTOP -->
+        <div class="hidden md:flex items-center gap-4">
+            <div class="text-right leading-tight">
+                <p class="text-sm font-medium">{{ request.user }}</p>
+                <p class="text-xs text-gray-500">{{ request.active_shop }}</p>
+            </div>
+            <a href="{% url 'Account:setting' %}">
+                <img src="{% static 'img/setting.svg' %}" class="w-5 dark:invert">
+            </a>
+        </div>
+
+
+        <!-- MOBILE BUTTON -->
+        <div x-data="{ open: false }" class="md:hidden flex items-center">
+            <button @click="open = !open" class="text-3xl">☰</button>
+
+            <!-- MOBILE OFF-CANVAS -->
+            <div x-show="open"
+                 x-transition:enter="transition transform duration-300"
+                 x-transition:enter-start="-translate-x-full"
+                 x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transition transform duration-300"
+                 x-transition:leave-start="translate-x-0"
+                 x-transition:leave-end="-translate-x-full"
+                 class="fixed top-0 left-0 w-64 h-full bg-white dark:bg-[#111827] z-50 shadow-lg">
+
+                <!-- Overlay -->
+                <div @click="open = false" class="absolute inset-0 bg-black/50"></div>
+
+                <!-- Menu -->
+                <div class="relative z-50 p-4">
+                    <div class="flex justify-end mb-4">
+                        <button @click="open = false" class="text-2xl">×</button>
+                    </div>
+
+                    <ul class="flex flex-col gap-4 text-sm font-medium">
+                        <li><a href="{% url 'TrackShop:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}text-green-600{% endif %} hover:text-green-500">Dashboard</a></li>
+                        <li><a href="{% url 'TrackShop:stock' %}" class="{% if request.resolver_match.url_name == 'stock' %}text-green-600{% endif %} hover:text-green-500">Stock</a></li>
+                        <li><a href="{% url 'TrackShop:create-purchase' %}" class="{% if request.resolver_match.url_name == 'create-purchase' %}text-green-600{% endif %} hover:text-green-500">Achat</a></li>
+                        <li><a href="{% url 'TrackShop:sale-create' %}" class="{% if request.resolver_match.url_name == 'sale-create' %}text-green-600{% endif %} hover:text-green-500">Vente</a></li>
+                        <li><a href="{% url 'TrackShop:cash_book' %}" class="{% if request.resolver_match.url_name == 'cash_book' %}text-green-600{% endif %} hover:text-green-500">Caisse</a></li>
+                        <li><a href="{% url 'TrackShop:inventory' %}" class="{% if request.resolver_match.url_name == 'inventory' %}text-green-600{% endif %} hover:text-green-500">Inventaire</a></li>
+                        <li><a href="{% url 'TrackShop:client' %}" class="{% if request.resolver_match.url_name == 'client' %}text-green-600{% endif %} hover:text-green-500">Clients</a></li>
+
+                        <hr class="border-gray-300 dark:border-gray-700 my-2">
+
+                        <li class="text-sm">{{ request.user }}</li>
+                        <li class="text-xs text-gray-500">{{ request.active_shop }}</li>
+                        <li>
+                            <a href="{% url 'Account:setting' %}" class="flex items-center gap-2 hover:text-green-500">
+                                <img src="{% static 'img/setting.svg' %}" class="w-4 dark:invert">
+                                Paramètres
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>	
+	
+	
+
 
 	<main class="flex flex-col lg:flex-row min-h-[calc(100vh-64px)]">
-			<aside class="w-full lg:w-64 bg-gray-100 dark:bg-gray-900
-						border-r border-gray-300 dark:border-gray-700
-						overflow-x-auto lg:overflow-y-auto">
 
-				{% block sub_menu %}{% endblock %}
-			</aside>
+    <!-- ASIDE -->
+    <aside class="w-full lg:w-64 bg-gray-100 dark:bg-gray-900
+                border-r border-gray-300 dark:border-gray-700
+                p-5 md:pt-10
+                lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto">
+        {% block sub_menu %}{% endblock %}
+    </aside>
 
-			<div class="p-10 shadow-2xl lg:ml-5 w-full flex lg:flex-col max-h-[60vh] sm:max-h-[65vh] md:max-h-[87vh] flex-col overflow-y-auto lg:overflow-y-auto mt-10">
-				{% block content %}
-				{% endblock %}	
-			</div>
+    <!-- CONTENU PRINCIPAL -->
+    <div class="p-5 pt-0 shadow-2xl lg:ml-5 w-full flex lg:flex-col 
+                flex-col 
+                overflow-y-visible lg:overflow-y-auto 
+                mt-10">
+        {% block content %}
+        {% endblock %}    
+    </div>
 
-			<div id="form-modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
-					<!-- Fond -->
-					<div id="form-overlay" class="absolute inset-0 bg-black/30 dark:bg-black/40 backdrop-blur-sm md:backdrop-blur-md"></div>
+    <!-- MODAL -->
+    <div id="form-modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+        <div id="form-overlay" class="absolute inset-0 bg-black/30 dark:bg-black/40 backdrop-blur-sm md:backdrop-blur-md"></div>
 
-				<!-- Contenu -->
-				<div id="form-content" class="relative bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-lg shadow-2xl w-full max-w-md mx-auto">
-					{% block form %}{% endblock %}
-					<!-- Bouton de fermeture -->
-					<button id="form-close" class="absolute top-2 right-2 text-gray-600 dark:text-gray-300 hover:text-red-500">&times;</button>
-				</div>
-			</div>
-			
-	</main>
+        <div id="form-content" class="relative bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-lg shadow-2xl w-full max-w-md mx-auto">
+            {% block form %}{% endblock %}
+            <button id="form-close" class="absolute top-2 right-2 text-gray-600 dark:text-gray-300 hover:text-red-500">&times;</button>
+        </div>
+    </div>
+
+</main>
+
 
 
 	
+	
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const modal = document.getElementById("form-modal");
-  const overlay = document.getElementById("form-overlay");
-  const closeBtn = document.getElementById("form-close");
 
-  // Fonction pour ouvrir le modal
-  window.openFormModal = function() {
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-  }
 
-  // Fonction pour fermer le modal
-  function closeModal() {
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-  }
+document.addEventListener("DOMContentLoaded", () => {
 
-  // Fermer en cliquant sur l’overlay ou sur la croix
-  overlay.addEventListener("click", closeModal);
-  closeBtn.addEventListener("click", closeModal);
+    const btn = document.getElementById("toggle_mode");
+    const circle = document.getElementById("toggle_circle");
+
+    // Initialisation : applique dark si localStorage indique 'dark'
+    if (localStorage.theme === 'dark' || 
+       (!localStorage.theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        circle.classList.add('translate-x-6', 'bg-yellow-400');
+    } else {
+        document.documentElement.classList.remove('dark');
+        circle.classList.remove('translate-x-6', 'bg-yellow-400');
+    }
+
+    // Toggle au clic
+    btn.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+
+        const isDark = document.documentElement.classList.contains('dark');
+        localStorage.theme = isDark ? 'dark' : 'light';
+
+        // Déplacement du cercle
+        if (isDark) {
+            circle.classList.add('translate-x-6', 'bg-yellow-400');
+            circle.classList.remove('bg-white');
+        } else {
+            circle.classList.remove('translate-x-6', 'bg-yellow-400');
+            circle.classList.add('bg-white');
+        }
+    });
 });
+
+
+
+
+	document.addEventListener("DOMContentLoaded", () => {
+		const btn = document.getElementById("mobile-btn");
+		const menu = document.getElementById("mobile-menu");
+
+		if (!btn || !menu) return;
+
+		btn.addEventListener("click", () => {
+			menu.classList.toggle("hidden");
+		});
+	});
+	
+	document.addEventListener("DOMContentLoaded", function() {
+		const modal = document.getElementById("form-modal");
+		const overlay = document.getElementById("form-overlay");
+		const closeBtn = document.getElementById("form-close");
+
+	// Fonction pour ouvrir le modal
+	window.openFormModal = function() {
+		modal.classList.remove("hidden");
+		modal.classList.add("flex");
+	}
+
+	// Fonction pour fermer le modal
+	function closeModal() {
+		modal.classList.add("hidden");
+		modal.classList.remove("flex");
+	}
+
+		// Fermer en cliquant sur l’overlay ou sur la croix
+		overlay.addEventListener("click", closeModal);
+		closeBtn.addEventListener("click", closeModal);
+	});
 </script>
 	
 

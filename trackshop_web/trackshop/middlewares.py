@@ -14,6 +14,11 @@ class ExchangeRateRequiredMiddleware:
         '/trackshop/dashboard/',
         '/trackshop/sale/new/',
         '/trackshop/payment/',
+        '/trackshop/stock/',
+        '/trackshop/purchase/',
+        '/trackshop/cash_book/',
+        '/trackshop/inventory/',
+        '/trackshop/client/'
     ]
 
     def __init__(self, get_response):

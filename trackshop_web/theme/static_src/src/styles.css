@@ -1,55 +1,13 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/**
-  * A catch-all path to Django template files, JavaScript, and Python files
-  * that contain Tailwind CSS classes and will be scanned by Tailwind to generate the final CSS file.
-  *
-  * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
-  * the scope of this path.
-  */
+/* Active le dark mode par class */
+@variant dark (&:where(.dark, .dark *));
 
-:root {
-  --color-input-bg: #f9fafb;
-  --color-input-border: #d1d5db;
-  --color-input-text: #1f2937;
-}
-
-.dark {
-  --color-input-bg: #374151;
-  --color-input-border: #4b5563;
-  --color-input-text: #f9fafb;
-}
-
-
+/* Scan Django templates */
 @source "../../../**/*.{html,py,js}";
 
-
-/* Custom colors */
-@theme {
-  --color-brand1: #004c99;
-  --color-brand2: #34d399;
-  --color-font1: #333333;
-  --color-font2: #ffffff
-  --color-intrasite: #cccccc;
-  --color-danger: #d93025;
-  --color-notify: #f77300;
-}
-
-/* Custom utilities */
-
-.ibtn{
-  @apply bg-brand2 p-2 rounded-md
-}
-
-.ibtn-add{
-  @apply bg-brand2 p-2 rounded-full w-7 h-7 flex items-center justify-center
-}
-
-.ilink {
-  @apply text-brand2 text-sm hover:hover:border-b-2 border-brand1
-}
-
-.irnumber {
-  @apply flex justify-around items-center text-center xl:text-xl rounded-full
+/* TEST VISUEL */
+.test-dark {
+  @apply bg-white dark:bg-red-600 text-black dark:text-white p-4;
 }
