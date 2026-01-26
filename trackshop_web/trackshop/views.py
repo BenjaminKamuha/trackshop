@@ -126,7 +126,7 @@ def dashboard(request):
 		
 		#Total mouvements entrants (in)
 		total_in = StockMovement.objects.filter(
-			stock__shop=request.active_shop, 
+			stock__shop=request.active_shop,
 			movement_type='in',
 			created_at__date=day
 		).aggregate(total=Sum('quantity'))['total'] or 0
@@ -220,7 +220,7 @@ def new_stock(request):
 			return render(request, "trackshop/dashboard.html", context={"stock_form": stock_form})
 		
 	stock_form = StockForm()
-	return render(request, "trackshop/new_stock.html", context={"stock_form": stock_form, "source": source})
+	return render(request, "trackshop/new_stock.html", context={"form": stock_form, "source": source})
 
 @login_required
 def new_client(request):
@@ -329,7 +329,45 @@ def fallow_client(request, client_pk):
 def stock(request):
 	stocks = Stock.objects.filter(shop=request.active_shop)
 	last_access_stock = Stock.objects.filter(shop=request.active_shop).order_by("-last_access_date").first()
-	return render(request, "trackshop/stock.html", context={"stocks": stocks, "stock": last_access_stock})
+
+		# Graphic2
+	movement_labels = []
+	movement_in = []
+	movement_out = []
+
+	last_7_days = [now - timedelta(days=i) for i in range(6, -1, -1)]
+
+
+	for day in last_7_days:
+		movement_labels.append(day.strftime("%d %b"))
+		
+		#Total mouvements entrants (in)
+		total_in = StockMovement.objects.filter(
+			stock = last_access_stock,
+			stock__shop=request.active_shop,
+			movement_type='in',
+			created_at__date=day
+		).aggregate(total=Sum('quantity'))['total'] or 0
+		movement_in.append(total_in)
+
+		#Total mouvements sortants (out)
+		total_out = StockMovement.objects.filter(
+			stock__shop=request.active_shop,
+			movement_type='out',
+			created_at__date=day
+		).aggregate(total=Sum('quantity'))['total'] or 0 
+		movement_out.append(total_out)
+	
+
+	return render(request, "trackshop/stock.html", context={
+		"stocks": stocks, 
+		"stock": last_access_stock,
+		"stock_labels": movement_labels,
+		"stock_in": movement_in,
+		"stock_out": movement_out,
+		
+		})
+
 
 @login_required
 def load_stock_product(request, stock_pk):

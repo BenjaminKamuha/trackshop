@@ -2,12 +2,18 @@
 {% load static %}
 
 {% block sub_menu %}
-    <h1 class="text-3xl">Dashboard</h1>
+    <h1 class="text-xl md:mb-10 text-center">Dashboard</h1>
 {% endblock %}
 
 {% block content %}
 
-    <div id="kpi" style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+<div class="p-5 space-y-6 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+    <div class="flex gap-5">
+       {% include "components/linear_progress.html" with label="Crédit client" value=sale_credit_percent color="blue" %}
+       {% include "components/linear_progress.html" with label="Crédit fournisseur" value=purchase_credit_percent color="green" %}
+
+    </div>
+        <div class="flex justify-between flex-wrap" >
         {% include "components/kpi_card.html" with title="Stock" value=stocks.count %}
 
         {% include "components/kpi_card.html" with title="Ventes aujourd'hui ($)" value=todaySales %}
@@ -19,15 +25,8 @@
         {% include "components/kpi_card.html" with title="Crédit fournisseur ($)" value=purchase_credit %}
 
     </div>
-
-<div class="p-5 space-y-6 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
-    <div class="flex gap-10">
-       {% include "components/linear_progress.html" with label="Crédit client" value=sale_credit_percent color="blue" %}
-       {% include "components/linear_progress.html" with label="Crédit fournisseur" value=purchase_credit_percent color="green" %}
-
-    </div>
-
-    <div class="flex flex-col md:flex-row gap-5">
+    
+    <div class="flex flex-col md:flex-row gap-4">
         <!-- Graphique -->
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
             <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
@@ -62,8 +61,8 @@
     <!-- ===================== -->
     <!-- TABLE SECTION -->
     <!-- ===================== -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 overflow-x-auto">
-        <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">Dernières ventes</p>
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 overflow-x-auto">
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">Dernières ventes</p>
         <table class="min-w-full table-auto">
             <thead class="bg-gray-200 dark:bg-gray-700">
                 <tr>

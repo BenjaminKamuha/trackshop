@@ -1,15 +1,113 @@
 {% extends 'base.html' %}
 
-{% block sub_menu %}
-    <div id="products" style="border: 2px solid green;">
-        {% include 'trackshop/partials/product/partial_product.html' %}
+
+<div class="hidden">
+    {% block sub_menu %}
+        <h1 class="text-xl md:mb-10 text-center">Stock</h1>
+            {% if stocks %}
+                <div style="display: flex;">
+                    {% for stock in stocks %}
+                        <a href="" hx-get="{% url 'TrackShop:load_stock_product' stock.pk %}" hx-target="#products" hx-trigger="click" hx-swap="innerHTML" hx-on:beforeRequest="document.getElementById('product_details').innerHTML = ''"><div id="stock" style="border: 2px solid black;">{{ stock }}</div></a>
+                    {% endfor %}
+                    <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>
+
+                </div>
+            {% else %}
+                <div class="flex flex-col text-center items-center justify-center">
+                    <p>Vous n'avez pas encore des stock</p>
+                    <p>Cliquer sur '+' pour ajouter </p>
+                    <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>
+                </div>
+            {% endif %}
+        
+    {% endblock %}
+
+</div>
+{% block content %}
+<div class="p-5 space-y-6 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+
+    <div class="flex flex-col md:flex-row gap-4">
+                <!-- Graphique -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                Mouvement du stock {% if stock %} {{ stock }} {% endif %}
+            </p>
+            <canvas id="stockMovement" class="w-full" height="200"></canvas>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                Produits du stock {% if stock %} {{ stock }} {% endif %}
+            </p>
+
+            <div>
+                {% include 'trackshop/partials/product/partial_product.html' %}
+            </div>
+        </div>
     </div>
+
+    <div class="flex flex-col md:flex-row gap-4">
+        <!-- Graphique -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                Detaille produit
+            </p>
+                <div id="product_details" style="border: 2px solid orange; display: flex;">
+        {% include "trackshop/partials/product/partial_product_detail.html" %}
+    </div>
+        </div>
+    </div>
+</div>
+
+
+{{ stock_labels|json_script:"stock-labels" }}
+{{ stock_in|json_script:"stock-in" }}
+{{ stock_out|json_script:"stock-out" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = JSON.parse(document.getElementById('stock-labels').textContent);
+const stockIn = JSON.parse(document.getElementById('stock-in').textContent);
+const stockOut = JSON.parse(document.getElementById('stock-out').textContent);
+
+const ctx = document.getElementById('stockMovement').getContext('2d');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Entrées',
+                data: stockIn,
+                fill: true,
+                tension: 0.4,
+            },
+            {
+                label: 'Sorties',
+                data: stockOut,
+                fill: true,
+                tension: 0.4,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+</script>
+
+    
 {% endblock %}
 
-{% block content %}
-    <div id="header" style="display: flex;">
+<div id="header" style="display: flex;">
+        
         <!-- All Stocks -->
         <div id="stocks" style="border: 2px solid yellow; width: 50%;">
+
             {% if stocks %}
                 <div style="display: flex;">
                     {% for stock in stocks %}
@@ -19,13 +117,9 @@
             {% else %}
                 <p>Vous n'avez pas encore des stock</p>
             {% endif %}
-            <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form" hx-trigger="click" hx-swap="innerHTML">Nouveau stock</button></a>
+            <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">Nouveau stock</button></a>
         </div>
         <!-- Chart stock -->
         <div id="Chart" style="border: 2px solid blue; width: 50%;">
         </div>
     </div>
-    <div id="product_details" style="border: 2px solid orange; display: flex;">
-        {% include "trackshop/partials/product/partial_product_detail.html" %}
-    </div>
-{% endblock %}

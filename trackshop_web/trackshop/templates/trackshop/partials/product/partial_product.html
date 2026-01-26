@@ -1,16 +1,32 @@
-<h3>Stock/{{ stock }}</h3>
+{% load static %}
 {% if stock.products.all %}
-    {% for prod in stock.products.all %}   
-        <p><a href="" hx-get="{% url 'TrackShop:product_details' prod.pk %}" hx-target="#product_details" hx-trigger="click" hx-swap="innerHTML">{{ prod }}</a></p>
-    {% endfor %}
-    <a href="" hx-get="{% url 'TrackShop:new_product' stock.pk %}" hx-target="#form" hx-trigger="click">Nouveau produit</a>
+    <div class="text-right">
+        <button type="" hx-get="{% url 'TrackShop:new_product' stock.pk %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>
+    </div>
+    <div class="flex gap-4 bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
+        
+        {% for prod in stock.products.all %}
+
+        <div class="border p-3" hx-get="{% url 'TrackShop:product_details' prod.pk %}" hx-target="#product_details" hx-trigger="click" hx-swap="innerHTML">{{ prod }}
+            <img src="{% static 'img/product.png' %}" alt="img">
+        </div>
+        {% endfor %}
+    </div>
+    
+    
 {% else %}
-    {% if stock %}
-        <p>Aucun produit trouvé pour {{ stock }}</p>
-        <a href="" hx-get="{% url 'TrackShop:new_product' stock.pk %}" hx-target="#form" hx-trigger="click" hx-swap="innerHTML">Nouveau produit</a>
-    {% else %}
-        <p>Vous n'avez pas encore des stock<br>Cliquer sur 'Nouveau stock' pour <br>Créer un stock</p>
-    {% endif %}
+
+    <div class="flex flex-col text-center items-center justify-center">
+    
+        {% if stock %}
+            <p>Aucun produit trouvé pour {{ stock }}</p>
+            <button type="" hx-get="{% url 'TrackShop:new_product' stock.pk %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>
+        {% else %}
+            <p>Vous n'avez pas encore des stock<br>Cliquer sur 'Nouveau stock' pour <br>Créer un stock</p>
+                    <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>
+
+        {% endif %}
+    </div>
 {% endif %}
     {% if product %}
         <span href="" hx-get="{% url 'TrackShop:product_details' product.pk %}" hx-target="#product_details" hx-trigger="load" hx-swap="innerHTML"></span>

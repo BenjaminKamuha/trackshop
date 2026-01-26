@@ -2,7 +2,10 @@
     <form action="{% url 'TrackShop:new_product' stock.pk %}" method="POST">
         {% csrf_token %}
         {{ product_form.as_p }}
-        <button type="submit">Ajouter le produit</button>
+                <div class="flex justify-around mt-10">
+            <a href="" onclick="closeModal()">Annuler</a>
+            <button type="submit" id="theme-toggle" class="px-2  w-30 rounded-lg bg-green-600 text-white dark:bg-green-600 text-slate-900 dark:text-slate-100 transition-200">Ajouter</button>
+        </div>
     </form>
 </div>
 

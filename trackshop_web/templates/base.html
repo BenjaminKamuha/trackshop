@@ -159,18 +159,20 @@
 	<main class="flex flex-col lg:flex-row min-h-[calc(100vh-64px)]">
 
     <!-- ASIDE -->
-    <aside class="w-full lg:w-64 bg-gray-100 dark:bg-gray-900
+    <aside class="w-full lg:w-50 bg-gray-100 dark:bg-gray-900
                 border-r border-gray-300 dark:border-gray-700
                 p-5 md:pt-10
                 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto">
-        {% block sub_menu %}{% endblock %}
+        {% block sub_menu %}
+
+        {% endblock %}
     </aside>
 
     <!-- CONTENU PRINCIPAL -->
-    <div class="p-5 pt-0 shadow-2xl lg:ml-5 w-full flex lg:flex-col 
+    <div class=" pt-0 shadow-2xl lg:ml-5 w-full flex lg:flex-col 
                 flex-col 
                 overflow-y-visible lg:overflow-y-auto 
-                mt-10">
+                mt-0">
         {% block content %}
         {% endblock %}    
     </div>
@@ -263,6 +265,5 @@ document.addEventListener("DOMContentLoaded", () => {
 		closeBtn.addEventListener("click", closeModal);
 	});
 </script>
-	
 
 </body>
