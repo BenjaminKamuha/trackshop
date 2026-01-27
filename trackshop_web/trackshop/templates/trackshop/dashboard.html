@@ -25,7 +25,7 @@
         {% include "components/kpi_card.html" with title="Crédit fournisseur ($)" value=purchase_credit %}
 
     </div>
-    
+
     <div class="flex flex-col md:flex-row gap-4">
         <!-- Graphique -->
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
@@ -134,7 +134,6 @@
 {{ stock_labels|json_script:"stock-labels" }}
 {{ stock_in|json_script:"stock-in" }}
 {{ stock_out|json_script:"stock-out" }}
-
 
 <canvas id="stockChart" class="w-full h-64"></canvas>
 

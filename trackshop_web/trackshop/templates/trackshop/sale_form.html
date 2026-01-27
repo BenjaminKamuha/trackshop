@@ -7,7 +7,10 @@
 {% endblock %}
 
 {% block sub_menu %}
-    <h1>Vente</h1>
+    <div class="flex justify-between border-b-2 border-gray-200 mb-10 text-center">
+        <h1 class="text-xl ">Vente</h1>
+        <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>        
+    </div>
     <input
         type="text"
         name="product_search"

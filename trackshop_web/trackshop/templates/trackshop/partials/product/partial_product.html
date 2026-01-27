@@ -7,9 +7,7 @@
         
         {% for prod in stock.products.all %}
 
-        <div class="border p-3" hx-get="{% url 'TrackShop:product_details' prod.pk %}" hx-target="#product_details" hx-trigger="click" hx-swap="innerHTML">{{ prod }}
-            <img src="{% static 'img/product.png' %}" alt="img">
-        </div>
+
         {% endfor %}
     </div>
     

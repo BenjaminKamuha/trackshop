@@ -1,11 +1,16 @@
-<div class="text-left">
-    <form action="{% url 'TrackShop:new_product' stock.pk %}" method="POST">
-        {% csrf_token %}
-        {{ product_form.as_p }}
-                <div class="flex justify-around mt-10">
-            <a href="" onclick="closeModal()">Annuler</a>
-            <button type="submit" id="theme-toggle" class="px-2  w-30 rounded-lg bg-green-600 text-white dark:bg-green-600 text-slate-900 dark:text-slate-100 transition-200">Ajouter</button>
-        </div>
-    </form>
-</div>
+<div class="text-xl text-center mb-10">Nouveau Produit</div>
 
+<div class="text-left border shadow-2xl border-gray-600 p-10 rounded-lg">
+
+    <div class="text-left text-center">
+        
+        <form action="{% url 'TrackShop:new_product' stock.pk %}" method="POST">
+            {% csrf_token %}
+            {{ product_form.as_p }}
+                    <div class="flex justify-around mt-10">
+                <a href="" onclick="closeModal()">Annuler</a>
+                <button type="submit" id="theme-toggle" class="px-2  w-30 rounded-lg bg-green-600 text-white dark:bg-green-600 text-slate-900 dark:text-slate-100 transition-200">Ajouter</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,16 +1,40 @@
 {% extends 'base.html' %}
-
+{% load static %}
 
 <div class="hidden">
     {% block sub_menu %}
-        <h1 class="text-xl md:mb-10 text-center">Stock</h1>
+        <div class="flex justify-between border-b-2 border-gray-200 mb-10 text-center">
+            <h1 class="text-xl ">Stock</h1>
+            <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>        
+        </div>
+    
+        </div>
             {% if stocks %}
-                <div style="display: flex;">
+                <div class="flex-col gap-4">
                     {% for stock in stocks %}
-                        <a href="" hx-get="{% url 'TrackShop:load_stock_product' stock.pk %}" hx-target="#products" hx-trigger="click" hx-swap="innerHTML" hx-on:beforeRequest="document.getElementById('product_details').innerHTML = ''"><div id="stock" style="border: 2px solid black;">{{ stock }}</div></a>
+                    <details class="box mb-5">
+                        <summary>
+                            <div class="inline-flex gap-2">
+                                <span>{{stock}}</span> <span ></span>
+                                 <button type="" hx-get="{% url 'TrackShop:new_product' stock.pk %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>                                        
+                            </div>
+                        </summary>
+                        <div class="flex md:flex-col  gap-2">
+                            {% for prod in stock.products.all %}
+                                {% if prod %}
+                                    <div class="bg-white dark:bg-gray-800 rounded-sm p-2 w-full flex gap-2 box" hx-get="{% url 'TrackShop:product_details' prod.pk %}" hx-target="#product_details" hx-trigger="click" hx-swap="innerHTML">
+                                        <img src="{% static 'img/product.png' %}" width="30" class="" alt="img">{{ prod }}
+                                    </div>
+                                {% else %}
+                                    <p>Aucun produit trouvé pour {{ stock }}</p>
+                                    <button type="" hx-get="{% url 'TrackShop:new_product' stock.pk %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>                                        
+                                {% endif %}        
+                                {% endfor %}
+                            </div>
+                    </details>
                     {% endfor %}
-                    <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>
 
+                    <br><br>
                 </div>
             {% else %}
                 <div class="flex flex-col text-center items-center justify-center">
@@ -34,27 +58,15 @@
             </p>
             <canvas id="stockMovement" class="w-full" height="200"></canvas>
         </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
-            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                Produits du stock {% if stock %} {{ stock }} {% endif %}
-            </p>
-
-            <div>
-                {% include 'trackshop/partials/product/partial_product.html' %}
-            </div>
-        </div>
     </div>
 
     <div class="flex flex-col md:flex-row gap-4">
         <!-- Graphique -->
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
-            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                Detaille produit
-            </p>
-                <div id="product_details" style="border: 2px solid orange; display: flex;">
-        {% include "trackshop/partials/product/partial_product_detail.html" %}
-    </div>
+
+            <div id="product_details">
+                {% include "trackshop/partials/product/partial_product_detail.html" %}
+            </div>
         </div>
     </div>
 </div>
@@ -65,39 +77,47 @@
 {{ stock_out|json_script:"stock-out" }}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-const labels = JSON.parse(document.getElementById('stock-labels').textContent);
-const stockIn = JSON.parse(document.getElementById('stock-in').textContent);
-const stockOut = JSON.parse(document.getElementById('stock-out').textContent);
+<script>   
 
-const ctx = document.getElementById('stockMovement').getContext('2d');
-
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: labels,
-        datasets: [
-            {
-                label: 'Entrées',
-                data: stockIn,
-                fill: true,
-                tension: 0.4,
-            },
-            {
-                label: 'Sorties',
-                data: stockOut,
-                fill: true,
-                tension: 0.4,
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
+    document.body.addEventListener('htmx:afterSwap', function (e) {
+        if (e.target.id === "product_details") {
+            e.target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            })
         }
-    }
-});
+    })
+    
+    const labels = JSON.parse(document.getElementById('stock-labels').textContent);
+    const stockIn = JSON.parse(document.getElementById('stock-in').textContent);
+    const stockOut = JSON.parse(document.getElementById('stock-out').textContent);
+    const ctx = document.getElementById('stockMovement').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Entrées',
+                    data: stockIn,
+                    fill: true,
+                    tension: 0.4,
+                },
+                {
+                    label: 'Sorties',
+                    data: stockOut,
+                    fill: true,
+                    tension: 0.4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
 </script>
 
     

@@ -1,49 +1,25 @@
+{% load static %}
 {% if product %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-">
+                    Details produit {{ product }}
+                </p>
+                <div class="flex justify-between flex-wrap" >
+                    {% include "components/kpi_card.html" with title="Quantité en stock" value=evaliable_quantity %}
 
-    <div style="border-right: 2px solid red; width: 50%;">
-        <div id="title" style="display: flex; justify-content: space-between;">
-            <h1 style="border: 2px solid black; margin-top:0;">{{ product }}</h1>
-            <div style="border: 2px solid black; padding-top: 10px;"><a href="#">Modifier</a></div>
-        </div>
+                    {% include "components/kpi_card.html" with title="Ventes du mois" value=sales_this_month %}
 
-        <p>Nom: <span>{{ product.name }}</span></p>
-        <p>Quantité Arrivage: <span>{{ product.quantity }}</span></p>
-        <p>Prix Unitaire: <span>{{ product.price }}</span></p>
-        <p>Nature du produit: </p>
-    </div>
-    <div style="width: 50%;">
-        <h1>Statistique pour {{ product.name }}</h1>
-        <div id="cads" style="display: flex; justify-content: space-around; ">
-            <div style="border: 2px solid blue; text-align: center;">
-                <p>Nombre des ventes ce mois</p>
-                <span>{{ sales_this_month }}</span>
-                <p> pièces</p>
-            </div>        
-            
-            <div style="border: 2px solid blue; text-align: center;">
-                <p>Chiffre d'affaires généré</p>
-                <p>{{ sales_revenue }}/{{ total_revenue }}</p>
-                <p>{{ product.currency }}</p>
+                    {% include "components/kpi_card.html" with title="Chiffre d'affaires généré ($)" value=sales_revenue %}
+
+                    {% include "components/kpi_card.html" with title="Crédits clients ($)" value=product_debt|floatformat:2 %}
+
+                    {% include "components/kpi_card.html" with title="Crédits fournisseur ($)" value=product_provider_debt|floatformat:2 %}
+                </div>
             </div>
-            
-            <div style="border: 2px solid blue; text-align: center;">
-                <p>Reste en stock</p>
-                <p>{{ evaliable_quantity }}</p>
-                <p> Pièces </p>
-            </div>
-
-            <div style="border: 2px solid blue; text-align: center;">
-                <p>Dette client</p>
-                <p>{{ product_debt|floatformat:2 }}</p>
-            </div>
-
-            <div style="border: 2px solid blue; text-align: center;">
-                <p>Dette fournisseur</p>
-                <p>{{ product_provider_debt|floatformat:2 }}</p>
-            </div>
-        </div>
-    </div>
-
 {% else %}
-    <p>Séléctionner un produit pour voir les détails</p>
+    <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                Detaille
+    </p>
+    <p class="text-center">Séléctionner un produit pour voir les détails</p>
 {% endif %}
+

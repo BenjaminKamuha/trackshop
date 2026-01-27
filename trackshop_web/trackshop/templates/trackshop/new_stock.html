@@ -1,7 +1,6 @@
-<div class="text-left border shadow-2xl border-gray-600 p-10 rounded-lg">
+<div class="text-xl text-center mb-10">Nouveau Stock</div>
 
-    <span class="text-xl">Nouveau stock</span>
-    
+<div class="text-left border shadow-2xl border-gray-600 p-10 rounded-lg">    
     <form action="{% url 'TrackShop:new_stock' %}" method="POST" class="mt-5 text-left">
         {% csrf_token %}
         {{ form }}
@@ -11,3 +10,6 @@
         </div>
     </form>
 </div>
+
+
+
