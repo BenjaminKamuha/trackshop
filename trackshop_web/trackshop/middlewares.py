@@ -11,14 +11,7 @@ class ExchangeRateRequiredMiddleware:
     Bloque les opérations commerciales si le taux du jour n'est pas défini
     """
     PROTECTED_PATHS = [
-        '/trackshop/dashboard/',
-        '/trackshop/sale/new/',
-        '/trackshop/payment/',
-        '/trackshop/stock/',
-        '/trackshop/purchase/',
-        '/trackshop/cash_book/',
-        '/trackshop/inventory/',
-        '/trackshop/client/'
+        '/trackshop'
     ]
 
     def __init__(self, get_response):
@@ -33,13 +26,21 @@ class ExchangeRateRequiredMiddleware:
 
         if any(request.path.startswith(p) for p in self.PROTECTED_PATHS):
             base_currency = Currency.objects.get(code='USD')
-
             rates_exist = ExchangeRate.objects.filter(
                 to_currency=base_currency, 
                 date=today
             ).exists()
+            
+            # On récupère le taux du jours
+            today_rate = ExchangeRate.objects.filter(
+			        from_currency=Currency.objects.get(code="CDF"),
+		            to_currency=Currency.objects.get(code="USD"),
+			        date=today
+		    ).first().rate
 
-            if not rates_exist:
+            print(f"**************************{today_rate} *****************************")
+
+            if not rates_exist or not today_rate:
                 messages.error(request, "Taux de change du jour non défini")
                 return redirect(reverse('TrackShop:set-exchange-rate'))
             

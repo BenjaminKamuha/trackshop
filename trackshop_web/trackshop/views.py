@@ -65,14 +65,13 @@ def set_exchange_rate(request):
 		return render(request, "accounts/partials/set_exchange_rate.html", {'last_rate': last_rate })
 	return render(request, "trackshop/set_exchange_rate.html", {'last_rate': last_rate })
 
-def get_today_rate(shop, from_currency, to_currency):
+def get_today_rate(request, from_currency, to_currency):
 	try:
-		return ExchangeRate.objects.get(
-			shop=shop,
-			from_currency=from_currency,
-			to_currency=to_currency,
-			date=now.date()
-		).rate 
+		ExchangeRate.objects.filter(
+			shop=request.active_shop, 
+			from_currency=Currency.objects.get(code="CDF"), 
+			to_currency=Currency.objects.get(code="USD")).latest('date').rate
+
 
 	except ExchangeRate.DoesNotExist:
 		raise ValidationError("Taux du jour non défini")
@@ -708,9 +707,9 @@ def purchase_history(request):
 def add_payment(request, sale_id):
 	sale = get_object_or_404(Sale, pk=sale_id)
 	rate = get_today_rate(
-		shop=request.active_shop,
-		from_currency=Currency.objects.get(code="CDF"),
-		to_currency=Currency.objects.get(code="USD")
+		request,
+		Currency.objects.get(code="CDF"),
+		Currency.objects.get(code="USD")
 	)
 
 	if request.method == 'POST':
@@ -740,8 +739,9 @@ def provider_payment(request, purchase_pk):
 	purchase = get_object_or_404(Purchase, pk=purchase_pk)
 	
 	rate = get_today_rate(
-		from_currency=Currency.objects.get(code="CDF"),
-		to_currency=Currency.objects.get(code="USD")
+		request,
+		Currency.objects.get(code="CDF"),
+		Currency.objects.get(code="USD")
 		)
 		
 	if request.method == "POST":
@@ -790,9 +790,9 @@ def sale_invoice_pdf(request, sale_id):
 def sale_create(request, message=None):
 	
 	rate = get_today_rate(
-		shop=request.active_shop,
-		from_currency=Currency.objects.get(code="CDF"),
-		to_currency=Currency.objects.get(code="USD")
+		request,
+		Currency.objects.get(code="CDF"),
+		Currency.objects.get(code="USD")
 	)
 	
 	return render(request, "trackshop/sale_form.html", {
@@ -818,9 +818,9 @@ def sale_add_row(request):
 def create_purchase(request):
 
 	rate = get_today_rate(
-		shop=request.active_shop,
-		from_currency=Currency.objects.get(code="CDF"),
-		to_currency=Currency.objects.get(code="USD")
+		request,
+		Currency.objects.get(code="CDF"),
+		Currency.objects.get(code="USD")
 	)
 
 	if request.method == "POST":

@@ -7,9 +7,14 @@
 {% endblock %}
 
 {% block sub_menu %}
-    <div class="flex justify-between border-b-2 border-gray-200 mb-10 text-center">
-        <h1 class="text-xl ">Achat</h1>
-        <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/shop.html' %}</button></a>        
+<div class="flex justify-center mb-10">
+    {% include 'components/shop.html' %}
+</div>
+    <div class="flex items-center justify-between border-b-2 border-gray-200 mb-10 text-center">
+        <span class="text-xl inline">Achat</span>
+            <div class="">
+        <a href="{% url 'TrackShop:purchase-history' %}" class="flex gap-2 items-center text-green-600">{% include "components/clock.html" %} Historique</a>
+        </div>
     </div>
 
     <div class="relative w-full">    
@@ -19,7 +24,7 @@
             <input
             type="text"
             name="product_search"
-            placeholder="Rechercher"
+            placeholder="Rechercher..."
             hx-get="{% url 'TrackShop:search-product' %}"
             hx-trigger="keyup changed delay:300ms"
             hx-target="#product-result"
@@ -67,9 +72,7 @@
         
     </div>
     
-    <div class="mt-10 flex">
-        <a href="{% url 'TrackShop:purchase-history' %}" class="flex gap-2 items-center text-green-600">{% include "components/clock.html" %} Historique</a>
-    </div>
+
 {% endblock %}
 
 {% block content %}
@@ -96,11 +99,6 @@
                 "
             >
         </div>
-            
-            
-            
-            
-            
             
         <div id="provider_result" style="margin-bottom: 30px;">
             <div style="display: flex;">
