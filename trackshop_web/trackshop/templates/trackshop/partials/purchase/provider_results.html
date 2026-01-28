@@ -1,16 +1,30 @@
 <div style="display: flex;">
      {% if providers %}    
-        {% for p in providers %}
-            <label for="provider{{ p.id }}" style="border: 2px solid rgb(233, 95, 15); height: 50px; margin-left: 10px;">{{ p.name }}</label>
-            <input id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
-        {% endfor %}
+            <div class="flex gap-6">
+                {% if providers.exists %}
+                    {% for p in providers %}
+                        <div class="flex ">
+                            <label for="provider{{ p.id }}" class="flex">{% include 'components/user.html' %}{{ p.name }}</label>    
+                            <input class="ml-2" id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="w-full">
+                        Aucun fournisseur trouvé, 
+                    </div>
+                {% endif %}
+            </div>
+
+        
     {% else %}
-        <span>Ce fournisseur n'est pas enregistré</span>
-        <form action="{% url 'TrackShop:new-provider' %}" method="POST">
-            {% csrf_token %}
-            <input type="hidden" id="name" value="{{ search_input }}" name="provider_name"><br>
-            <input type="hidden" value="purchase" name="from">
-            <button type="submit">Ajouter</button>
-        </form>
+        <div class="flex">
+            <span > <span class=" rounded-lg undelinedfsf">"{{ search_input}}" </span> n'est pas enregistré</span>
+            <form action="{% url 'TrackShop:new-provider' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="name" value="{{ search_input }}" name="provider_name">
+                <input type="hidden" value="purchase" name="from">
+                <button type="submit" class="text-green-600 ml-5">Ajouter</button>
+            </form>
+        </div>
     {% endif %}
 </div>

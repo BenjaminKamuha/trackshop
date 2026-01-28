@@ -3,9 +3,13 @@
 
 <div class="hidden">
     {% block sub_menu %}
-        <div class="flex justify-between border-b-2 border-gray-200 mb-10 text-center">
+    <div class="flex justify-center mb-5">
+    {% include 'components/stock.html' %}
+</div>
+    
+        <div class="flex justify-between border-b-2 border-gray-600 mb-10 text-center">
             <h1 class="text-xl ">Stock</h1>
-            <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>        
+            <a class="text-green-600" type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</a>        
         </div>
     
         </div>
@@ -40,7 +44,7 @@
                 <div class="flex flex-col text-center items-center justify-center">
                     <p>Vous n'avez pas encore des stock</p>
                     <p>Cliquer sur '+' pour ajouter </p>
-                    <button type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>
+                <a class="text-green-600" type="" hx-get="{% url 'TrackShop:new_stock' %}?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</a>        
                 </div>
             {% endif %}
         

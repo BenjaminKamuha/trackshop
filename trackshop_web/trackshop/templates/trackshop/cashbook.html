@@ -1,25 +1,83 @@
 {% extends 'base.html' %}
 
 {% block sub_menu %}
-    <h1>Livre</h1>
+    <div class="flex justify-center mb-5">
+        {% include 'components/book.html' %}
+    </div>
+       <div class="flex items-center justify-between border-b-1 border-gray-600 mb-10 text-center">
+        <span class="text-xl inline">Livre</span>
+            <div class="">
+        </div>
+    </div>
 {% endblock %}
 
  {% block content %}
 
-    <form 
-        hx-post="{% url 'TrackShop:cash_book' %}"
-        hx-target="#cash_book"
-        hx-swap="innerHTML"
-        >
-        {% csrf_token %}
-        <label for="currency">Choisir la dévise:</label>
-        <select name="currency" id="currency">
-            <option value="USD">USD</option>
-            <option value="CDF">CDF</option>
-        </select><br>
-        <label for="">Sélectionner la date: </label><input class="border rounded" type="date" name="date" id="" value="" required><br>
-        <button type="submit" class="border rounded mt-10 mb-10">Afficher le livre de caisse</button> 
-    </form>
-    <div id="cash_book">
+<div class="p-5 space-y-6 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+    <div class="flex justify-center flex">
+<form 
+    hx-post="{% url 'TrackShop:cash_book' %}"
+    hx-target="#cash_book"
+    hx-swap="innerHTML"
+    class="w-full"
+>
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4
+                border border-gray-300 rounded-lg
+                dark:border-gray-700">
+
+        <!-- Devise -->
+        <div class="flex flex-col">
+            <label for="currency" class="text-sm mb-1">
+                Choisir la devise
+            </label>
+            <select
+                name="currency"
+                id="currency"
+                class="h-10 px-3 py-2 border border-gray-600 rounded-md text-sm
+                       focus:outline-none focus:border-2 focus:border-green-600
+                       dark:bg-[#111827] dark:border-gray-600">
+                <option value="USD">USD</option>
+                <option value="CDF">CDF</option>
+            </select>
+        </div>
+
+        <!-- Date -->
+        <div class="flex flex-col">
+            <label for="date" class="text-sm mb-1">
+                Sélectionner la date
+            </label>
+            <input
+                type="date"
+                name="date"
+                id="date"
+                value="{{ today|date:'Y-m-d' }}"
+                required
+                class="h-10 px-3 py-2 border border-gray-500 rounded-md
+                       focus:outline-none focus:border-2 focus:border-green-600
+                       dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+        </div>
+
+        <!-- Bouton -->
+        <div class="flex items-end">
+            <button
+                type="submit"
+                class="w-full h-10 border rounded-md
+                       bg-green-600 text-white
+                       hover:bg-green-700 transition">
+                Afficher le livre de caisse
+            </button>
+        </div>
+
     </div>
+</form>
+
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 overflow-x-auto" id="cash_book">
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">Dernières ventes</p>
+</div>
+
+    
  {% endblock %}

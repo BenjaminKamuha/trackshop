@@ -1,22 +1,49 @@
-    <h2>Livre de caisse ({{ currency.code }})</h2>
+<h2 class="text-lg font-semibold mb-4">
+    Livre de caisse ({{ currency.code }})
+</h2>
 
-    <table>
-        <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Entrée</th>
-            <th>Sortie</th>
-            <th>Solde</th>
-        </tr>
-        {% for row in rows %}
+<div class="relative overflow-x-auto">
+    <table class="min-w-full border border-gray-300 dark:border-gray-700 text-sm">
+
+        <thead class="bg-gray-100 dark:bg-gray-700 text-left">
             <tr>
-                <td>{{ row.date|date:"d/m/Y" }}</td>
-                <td>{{ row.description }}</td>
-                <td>{{ row.income|floatformat:2 }} {{ currency.symbol }}</td>
-                <td>{{ row.expense|floatformat:2 }} {{ currency.symbol }}</td>
-                <td>{{ row.balance|floatformat:2 }} {{ currency.symbol }}</td>
+                <th class="px-3 py-2 whitespace-nowrap">Date</th>
+                <th class="px-3 py-2 whitespace-nowrap">Description</th>
+                <th class="px-3 py-2 whitespace-nowrap text-right">Entrée</th>
+                <th class="px-3 py-2 whitespace-nowrap text-right">Sortie</th>
+                <th class="px-3 py-2 whitespace-nowrap text-right">Solde</th>
             </tr>
-        {% endfor %}
-    </table>
+        </thead>
 
-    <a href="{% url 'TrackShop:cash-book-pdf' currency.code date %} ">Exporter en pdf</a>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+            {% for row in rows %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-3 py-2 whitespace-nowrap">
+                    {{ row.date|date:"d/m/Y" }}
+                </td>
+                <td class="px-3 py-2 min-w-[200px]">
+                    {{ row.description }}
+                </td>
+                <td class="px-3 py-2 text-right whitespace-nowrap text-green-600">
+                    {{ row.income|floatformat:2 }} {{ currency.symbol }}
+                </td>
+                <td class="px-3 py-2 text-right whitespace-nowrap text-red-600">
+                    {{ row.expense|floatformat:2 }} {{ currency.symbol }}
+                </td>
+                <td class="px-3 py-2 text-right whitespace-nowrap font-semibold">
+                    {{ row.balance|floatformat:2 }} {{ currency.symbol }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-4 text-right">
+    <a
+        href="{% url 'TrackShop:cash-book-pdf' currency.code date %}"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-md
+               bg-green-600 text-white hover:bg-green-700 transition">
+        Exporter en PDF
+    </a>
+</div>

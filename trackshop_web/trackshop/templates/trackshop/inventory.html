@@ -1,73 +1,223 @@
 {% extends 'base.html' %}
 {% load math_tags %}
 
-
 {% block sub_menu %}
-    <h1>Inventory</h1>
+    <div class="flex justify-center mb-5">
+        {% include 'components/penw.html' %}
+    </div>
 
-    <a href="" hx-get="{% url 'TrackShop:new-inventory' %}" hx-trigger="click" hx-target="#form">Nouveau</a>
+    <div class="flex items-center justify-between border-b border-gray-600 mb-10">
+        <span class="text-xl">Inventaire</span>
+    </div>
+
+    <a href=""
+       hx-get="{% url 'TrackShop:new-inventory' %}"
+       hx-trigger="click"
+       hx-target="#form">
+        Nouveau
+    </a>
 
     {% for inventory in inventories %}
-
-        <div style="border: 2px solid blue;" hx-get="{% url 'TrackShop:inventory-detail' inventory.pk %}" hx-target="#inventory_detail" hx-trigger="click" class="box">
-            <p>{{ inventory }} type: {{ inventory.inventory_type }}</p>
+        <div class="border-2 border-blue-500 p-2 mt-2 cursor-pointer box"
+             hx-get="{% url 'TrackShop:inventory-detail' inventory.pk %}"
+             hx-target="#inventory_detail"
+             hx-trigger="click">
+            <p>{{ inventory }} — type : {{ inventory.inventory_type }}</p>
         </div>
     {% endfor %}
 {% endblock %}
 
 {% block content %}
-    <h3>Créer un nouveau inventaire</h3>
 
-    <form action="{% url 'TrackShop:new-inventory' %}" method="POST">
+<div class="p-5 space-y-6 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+
+    <!-- FORMULAIRE INVENTAIRE -->
+    <form action="{% url 'TrackShop:new-inventory' %}"
+          method="POST"
+          class="w-full">
         {% csrf_token %}
-        <label for="start_date">Date debut: </label><input type="date" name="start_date" id="start_date" required><br>
-        <label for="end_date">Date fin: </label><input type="date" name="end_date" id="end_date" required><br>
-        <label for="inv_type">Type d'inventaire: </label>
-        <select name="inventory_type" id="">
-            <option value="monthly">Mensuel</option>
-            <option value="yearly">Annuel</option>
-        </select>
-        <button type="submit">Créer l'inventaire</button>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4
+                    border border-gray-300 rounded-lg
+                    dark:border-gray-700">
+
+            <!-- TYPE -->
+            <div class="flex flex-col">
+                <label class="text-sm mb-1">Type d'inventaire</label>
+                <select name="inventory_type"
+                        id="inventory_type"
+                        class="h-10 px-3 py-2 border border-gray-600 rounded-md
+                               focus:outline-none focus:border-2 focus:border-green-600
+                               dark:bg-[#111827] dark:border-gray-600">
+                    <option value="monthly">Mensuel</option>
+                    <option value="yearly">Annuel</option>
+                </select>
+            </div>
+
+            <!-- DATES -->
+            <div class="flex flex-col gap-2">
+                <div>
+                    <label class="text-sm mb-1">Date début</label>
+                    <input type="date"
+                           id="start_date"
+                           name="start_date"
+                           required
+                           value="{{ today|date:'Y-m-d' }}"
+                           class="w-full h-10 px-3 py-2 border border-gray-500 rounded-md
+                                  focus:outline-none focus:border-2 focus:border-green-600
+                                  dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                </div>
+
+                <div>
+                    <label class="text-sm mb-1">Date fin</label>
+                    <input type="date"
+                           id="end_date"
+                           name="end_date"
+                           required
+                           value="{{ today|date:'Y-m-d' }}"
+                           class="w-full h-10 px-3 py-2 border border-gray-500 rounded-md
+                                  focus:outline-none focus:border-2 focus:border-green-600
+                                  dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                </div>
+            </div>
+
+            <!-- BOUTON -->
+            <div class="flex items-end">
+                <button type="submit"
+                        class="w-full h-10 rounded-md
+                               bg-green-600 text-white
+                               hover:bg-green-700 transition">
+                    Générer l'inventaire
+                </button>
+            </div>
+
+        </div>
     </form>
 
+    <div>in</div>
+
+    <!-- INVENTAIRE -->
     {% if inventory %}
-        <div id="inventory_detail">
-            <h2>Inventaire {{ inventory.start_date }} - {{ inventory.end_date }}</h2>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 overflow-x-auto mt-6" id="inventory-detail">
 
-            <form action="{% url 'TrackShop:inventory-detail' inventory.pk %}" method="POST">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                Inventaire du {{ inventory.start_date }} au {{ inventory.end_date }}
+            </p>
+
+            <form action="{% url 'TrackShop:inventory-detail' inventory.pk %}"
+                  method="POST">
                 {% csrf_token %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Produit</th>
-                            <th>Stock système</th>
-                            <th>Stock physique</th>
-                            <th>Différence</th>
-                            <th>Prix USD</th>
-                            <th>Valeur écart</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in inventory.items.all %}
-                        <tr>
-                            <td>{{ item.product.name }}</td>
-                            <td>{{ item.system_quantity }}</td>
-                            <td>
-                                <input type="number" name="physical_{{ item.id }}" value="{{ item.physical_quantity }}">
-                            </td>
-                            
-                            <th>{{ item.difference }}</th>
-                            <th>{{ item.product.price }}</th>
-                            <td>
-                                {{ item.difference|mul:item.product.price }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                    <button type="submit">Enregistrer</button> <a href="{% url 'TrackShop:inventory-detail-pdf' inventory.pk %} ">Exporter en pdf</a>
 
+                <table class="min-w-full border border-gray-300 dark:border-gray-600 text-sm">
+            <thead class="bg-gray-100 dark:bg-gray-700">
+                <tr>
+                    <th class="border px-3 py-2 text-left">Produit</th>
+                    <th class="border px-3 py-2 text-left">Stock système</th>
+                    <th class="border px-3 py-2 text-left">Stock physique</th>
+                    <th class="border px-3 py-2 text-left">Différence</th>
+                    <th class="border px-3 py-2 text-left">Prix USD</th>
+                    <th class="border px-3 py-2 text-left">Valeur écart</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventory.items.all %}
+                <tr class="even:bg-gray-50 dark:even:bg-gray-700">
+                    <td class="border px-3 py-2">{{ item.product.name }}</td>
+                    <td class="border px-3 py-2">{{ item.system_quantity }}</td>
+                    <td class="border px-3 py-2">
+                    <input type="number"
+                        name="physical_{{ item.id }}"
+                        value="{{ item.physical_quantity }}"
+                        data-system="{{ item.system_quantity }}"
+                        data-price="{{ item.product.price }}"
+                        oninput="updateInventoryRow(this)"
+                        class="w-full h-8 px-2 border border-gray-400 rounded-md
+                                focus:outline-none focus:border-2 focus:border-green-600
+                                dark:bg-gray-800 dark:border-gray-600 dark:text-white text-sm">
+                    </td>
+
+                    <td class="border px-3 py-2 difference">
+                        {{ item.difference }}
+                    </td>
+
+                    <td class="border px-3 py-2">
+                        {{ item.product.price|floatformat:2 }}
+                    </td>
+
+                    <td class="border px-3 py-2 gap-value">
+                        {{ item.difference|mul:item.product.price|floatformat:2 }}
+                    </td>
+                {% endfor %}
+            </tbody>
+        </table>
+
+                <div class="flex gap-4 mt-4">
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Enregistrer
+                    </button>
+
+                    <a href="{% url 'TrackShop:inventory-detail-pdf' inventory.pk %}"
+                       class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Exporter en PDF
+                    </a>
+                </div>
             </form>
-        </div>   
-    {% endif %} 
+        </div>
+    {% endif %}
+</div>
+
+<!-- SCRIPT -->
+<script>
+function initInventoryDates() {
+    const typeSelect = document.getElementById('inventory_type');
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
+
+    if (!typeSelect || !startDate || !endDate) return;
+
+    function format(d) {
+        return d.toISOString().split('T')[0];
+    }
+
+    function setMonthly() {
+        const now = new Date();
+        startDate.value = format(new Date(now.getFullYear(), now.getMonth(), 1));
+        endDate.value = format(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+    }
+
+    function setYearly() {
+        const year = new Date().getFullYear();
+        startDate.value = `${year}-01-01`;
+        endDate.value = `${year}-12-31`;
+    }
+
+    function update() {
+        typeSelect.value === 'yearly' ? setYearly() : setMonthly();
+    }
+
+    update();
+    typeSelect.addEventListener('change', update);
+}
+
+document.addEventListener('DOMContentLoaded', initInventoryDates);
+document.addEventListener('htmx:load', initInventoryDates);
+</script>
+
+<script>
+function updateInventoryRow(input) {
+    const row = input.closest('tr');
+
+    const systemQty = parseFloat(input.dataset.system) || 0;
+    const physicalQty = parseFloat(input.value) || 0;
+    const price = parseFloat(input.dataset.price) || 0;
+
+    const difference = physicalQty - systemQty;
+    const gapValue = difference * price;
+
+    row.querySelector('.difference').innerText = difference;
+    row.querySelector('.gap-value').innerText = gapValue.toFixed(2);
+}
+</script>
+
 {% endblock %}

@@ -7,10 +7,10 @@
 {% endblock %}
 
 {% block sub_menu %}
-<div class="flex justify-center mb-10">
+<div class="flex justify-center mb-5">
     {% include 'components/shop.html' %}
 </div>
-    <div class="flex items-center justify-between border-b-2 border-gray-200 mb-10 text-center">
+    <div class="flex items-center justify-between border-b-1 border-gray-600 mb-10 text-center">
         <span class="text-xl inline">Achat</span>
             <div class="">
         <a href="{% url 'TrackShop:purchase-history' %}" class="flex gap-2 items-center text-green-600">{% include "components/clock.html" %} Historique</a>
@@ -24,7 +24,7 @@
             <input
             type="text"
             name="product_search"
-            placeholder="Rechercher..."
+            placeholder="Rechercher un produit..."
             hx-get="{% url 'TrackShop:search-product' %}"
             hx-trigger="keyup changed delay:300ms"
             hx-target="#product-result"
@@ -40,33 +40,41 @@
     <div id="product-result">
         <form>
             {% csrf_token %}
-            {% for p in products %}
 
-                <div class="flex md:flex-col  gap-2 mt-2">
-                    {% if p %}
-                        <div class="bg-white dark:bg-gray-800 rounded-sm p-2 w-full flex gap-2 box" 
-                            
-                            hx-post="{% url 'TrackShop:select-product' p.pk %}"
-                            hx-target="#purchase-items"
-                            hx-trigger="click"
-                            hx-swap="beforeend"
-                            hx-on:click="const row=this.closest('div') ;row.querySelector('[name=&quot;prod_selected[]&quot;]').value={{ p.pk }}; document.getElementById('prod{{ p.pk }}').remove();"
-                        onclick="document.getElementById('validate-sale-btn').classList.remove('hidden'); 
-                        document.getElementById('help_text').classList.add('hidden');
-                        document.getElementById('currency').classList.remove('hidden')
-                        ">
-                        <img src="{% static 'img/product.png' %}" width="30" class="" alt="img">{{ p.name }}
-                        <input type="hidden" name="prod_selected[]" value="{{ product.pk }}">
-                        <input type="hidden" name="from_request" value="purchase_form">
+            {% if products %}
+                <div class="flex md:flex-col overflow-x-auto gap-6">
+                    {% for p in products %}
+                        <div class="flex md:flex-col  gap-2 mt-2">
+                            {% if p %}
+                                <div class="bg-white dark:bg-gray-800 rounded-sm p-2 w-full flex gap-2 box" 
+                                    
+                                    hx-post="{% url 'TrackShop:select-product' p.pk %}"
+                                    hx-target="#purchase-items"
+                                    hx-trigger="click"
+                                    hx-swap="beforeend"
+                                    hx-on:click="const row=this.closest('div') ;row.querySelector('[name=&quot;prod_selected[]&quot;]').value={{ p.pk }}; document.getElementById('prod{{ p.pk }}').remove();"
+                                onclick="document.getElementById('validate-sale-btn').classList.remove('hidden'); 
+                                document.getElementById('help_text').classList.add('hidden');
+                                document.getElementById('currency').classList.remove('hidden')
+                                ">
+                                <img src="{% static 'img/product.png' %}" width="30" class="" alt="img">{{ p.name }}
+                                <input type="hidden" name="prod_selected[]" value="{{ product.pk }}">
+                                <input type="hidden" name="from_request" value="purchase_form">
+                                </div>
+                            {% else %}
+                                <p>Aucun produit trouvé</p>
+                            <!--<button type="" hx-get="#?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>                                        -->
+                            {% endif %}         
                         </div>
-                    {% else %}
-                        <p>Aucun produit trouvé</p>
-                    <!--<button type="" hx-get="#?from=stock" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</button></a>                                        -->
-                    {% endif %}         
+                {% endfor %}
                 </div>
-                
-                
-            {% endfor %}
+            {% else %}
+                    <div class="flex flex-col text-center items-center justify-center">
+                    <p>Vous n'avez pas encore des produits</p>
+                    
+                </div>
+            
+            {% endif %}
         </form>
 
         
@@ -76,46 +84,56 @@
 {% endblock %}
 
 {% block content %}
-    <form action="{% url 'TrackShop:create-purchase' %}" method="POST">
+    <form action="{% url 'TrackShop:create-purchase' %}" method="POST" class="m-5">
         {% csrf_token %}
         <!-- Porvider -->
-        <div style="display: flex; flex-direction: row; border-bottom: 2px solid rgb(201, 114, 16); margin: 40px 0 0 40px">
-        <div class="relative">    
-            <span class="absolute left-3 top-5 -translate-y-1/2 text-gray-400 pointer-events-none">
-                {% include "components/search.html" %}
-            </span>
+        <div class="flex gap-5 items-center justify-between bb-gray-2 m-5 border-b-1 pb-4 border-gray-600 ">
+            <div class="relative flex-1 flex">    
+                <span class="absolute left-3 top-5 -translate-y-1/2 text-gray-400 pointer-events-none">
+                    {% include "components/search.html" %}
+                </span>
+                <input
+                    type="text"
+                    name="provider_search"
+                    placeholder="Rechercher un fournisseur..."
+                    hx-get="{% url 'TrackShop:search-provider' %}"
+                    hx-trigger="keyup changed"
+                    hx-target="#provider_result"
+                class="
+                    h-9 lg:h-9  px-3 py-2 border border-gray-500 rounded-md  pl-10 
+                    focus:outline-none focus:border-2 focus:border-green-600
+                    dark:bg-gray-800 dark:border-gray-600 dark:text-white w-full md:w-auto
+                    "
+                >
+            </div>
 
-            <input
-                type="text"
-                name="provider_search"
-                placeholder="Rechercher un fournisseur..."
-                hx-get="{% url 'TrackShop:search-provider' %}"
-                hx-trigger="keyup changed"
-                hx-target="#provider_result"
-            class="
-                h-9 lg:h-9  px-3 py-2 border border-gray-500 rounded-md mb-4 pl-10 
-                focus:outline-none focus:border-2 focus:border-green-600
-                dark:bg-gray-800 dark:border-gray-600 dark:text-white
-                "
-            >
-        </div>
-            
-        <div id="provider_result" style="margin-bottom: 30px;">
-            <div style="display: flex;">
-                {% if providers.exists %}
-                    {% for p in providers %}
-                        <label for="provider{{ p.id }}" style="border: 2px solid rgb(223, 93, 7); height: 50px; margin-left: 10px;">{{ p.name }}</label>
-                        <input id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
-                        {% endfor %}
-                    {% else %}
-                        Aucun fournisseur trouvé, 
-                        <a class="text-blue-500" href="" hx-get="{% url 'TrackShop:new-provider' %}" hx-target="#form" hx-trigger="click">Ajouter un fournisseur</a>
-                    {% endif %}
-                </div>
+            <div>
+              <a class="text-blue-500 text-green-600" href="" hx-get="{% url 'TrackShop:new-provider' %}" hx-target="#form-content" hx-trigger="click" hx-swap="innerHTML" onclick="openFormModal()">{% include 'components/add.html' %}</a>
             </div>
         </div>
-        <div class="mb-5 hidden" id="currency">
-            <label for="currency">Selectionner la Dévise: </label>
+
+        <div id="provider_result" class="flex-1 flex gap overflow-x-auto justify-center items-center justify-between bb-gray-2 m-5 border-b-1 pb-4 border-gray-600">
+            <div class="flex gap-6">
+                {% if providers.exists %}
+                    {% for p in providers %}
+                        <div class="flex ">
+                            <label for="provider{{ p.id }}" class="flex">{% include 'components/user.html' %}{{ p.name }}</label>    
+                            <input class="ml-2" id="provider{{ p.id }}" type="radio" name="provider_id" value="{{ p.id }}" required onchange="document.getElementById('provider_error').remove()">
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="w-full">
+                        Aucun fournisseur trouvé, 
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        
+        
+        <div class="m-5">
+            <div class="mb-5 hidden" id="currency">
+            <label for="currency">Dévise: </label>
             <select id="currency_select" name="currency" id="" required>
                 <option value="USD">USD</option>
                 <option value="CDF">CDF</option>
@@ -123,19 +141,21 @@
             <label for="" class="ml-10">Taux du jours</label>
             <input type="number" step="0.0001" name="rate" id="rate" value="{{ rate }}" readonly>
         </div>
-        <!-- Produits -->
-
-        <div id="purchase-items" style="width: 60%;">
+            <!-- Produits -->
+        <div class="flex justify-center">
+            <div id="purchase-items" class="">
         </div>
-        <div id="help_text">
-            <p>help text provider bla bla bla bla </p>
+        </div>
+        <div id="help_text" class="m-10">
+            <p>Sélectionner un fournisseur, puis un produit </p>
         </div>
 
-        <button id="validate-sale-btn" class="hidden" type="submit" onclick="submitSale()">Valider l'achat</button>
+        <div class="flex justify-center mt-10">
+            <button id="validate-sale-btn" class="hidden px-2  rounded-lg bg-green-600 text-white dark:bg-green-600 text-slate-900 dark:text-slate-100 transition-200" type="submit" onclick="submitSale()">Valider l achant</button>
+        </div>
         <div id="product_count"></div>
+        </div>
     </form>
-
-    <div id="purchase-result"></div>
 {% endblock %}
 
 {% block scripts %}

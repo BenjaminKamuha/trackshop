@@ -1,70 +1,47 @@
 {% load math_tags %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
+<div class="bg-white dark:bg-gray-800 rounded-xl p-4 overflow-x-auto" id="inventory_detail">
+    <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">Inventaire {{ inventory.start_date }} - {{ inventory.end_date }}</p>
 
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    <form action="{% url 'TrackShop:inventory-detail' inventory.pk %}" method="POST">
+        {% csrf_token %}
+        <table class="min-w-full border border-gray-300 dark:border-gray-600 text-sm">
+            <thead class="bg-gray-100 dark:bg-gray-700">
+                <tr>
+                    <th class="border px-3 py-2 text-left">Produit</th>
+                    <th class="border px-3 py-2 text-left">Stock système</th>
+                    <th class="border px-3 py-2 text-left">Stock physique</th>
+                    <th class="border px-3 py-2 text-left">Différence</th>
+                    <th class="border px-3 py-2 text-left">Prix USD</th>
+                    <th class="border px-3 py-2 text-left">Valeur écart</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventory.items.all %}
+                <tr class="even:bg-gray-50 dark:even:bg-gray-700">
+                    <td class="border px-3 py-2">{{ item.product.name }}</td>
+                    <td class="border px-3 py-2">{{ item.system_quantity }}</td>
+                    <td class="border px-3 py-2">
+                        <input type="number" name="physical_{{ item.id }}" value="{{ item.physical_quantity }}"
+                            class="w-full h-8 px-2 border border-gray-400 rounded-md focus:outline-none focus:border-2 focus:border-green-600 dark:bg-gray-800 dark:border-gray-600 dark:text-white text-sm">
+                    </td>
+                    <td class="border px-3 py-2">{{ item.difference }}</td>
+                    <td class="border px-3 py-2">{{ item.product.price|floatformat:2 }}</td>
+                    <td class="border px-3 py-2">{{ item.difference|mul:item.product.price|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-        th, td {
-            border: 1px solid #000;
-            padding: 6px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f0f0f0;
-        }
-
-        .border {
-            border: 2px solid black;
-        }
-        
-        .flex {
-            display: flex;
-            justify-content: space-between;
-        }
-
-    </style>
-</head>
-
-<h2>Inventaire {{ inventory.start_date }} - {{ inventory.end_date }}</h2>
-
-<form action="{% url 'TrackShop:inventory-detail' inventory.pk %}" method="POST">
-    {% csrf_token %}
-    <table>
-        <thead>
-            <tr>
-                <th>Produit</th>
-                <th>Stock système</th>
-                <th>Stock physique</th>
-                <th>Différence</th>
-                <th>Prix USD</th>
-                <th>Valeur écart</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in inventory.items.all %}
-            <tr>
-                <td>{{ item.product.name }}</td>
-                <td>{{ item.system_quantity }}</td>
-                <td>
-                    <input type="number" name="physical_{{ item.id }}" value="{{ item.physical_quantity }}">
-                </td>
-                
-                <th>{{ item.difference }}</th>
-                <th>{{ item.product.price }}</th>
-                <td>
-                    {{ item.difference|mul:item.product.price }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-        <button type="submit">Enregistrer</button><a href="{% url 'TrackShop:inventory-detail-pdf' inventory.pk %} ">Exporter en pdf</a>
-</form>
+        <div class="flex flex-col md:flex-row justify-between mt-4 gap-4">
+            <button type="submit"
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition text-sm">
+                Enregistrer
+            </button>
+            <a href="{% url 'TrackShop:inventory-detail-pdf' inventory.pk %}"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition text-sm inline-block text-center">
+                Exporter en PDF
+            </a>
+        </div>
+    </form>
+</div>

@@ -6,21 +6,42 @@
     {% endif %}
  
 {% else %}
-    <div style="display: flex;">
-        {% if clients %}
-            {% for c in clients %}
-                <label for="client{{ c.id }}" style="border: 2px solid blue; height: 50px; margin-left: 10px;">{{ c.complete_name }}</label>
-                <input id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required onchange="document.getElementById('client_error').remove()">
-            {% endfor %}
-        {% else %}
-            <span>Ce client n'est pas enregistré</span>
+
+<div style="display: flex;">
+     {% if clients %}    
+            <div class="flex gap-6">
+                {% if clients.exists %}
+                    {% for c in clients %}
+                        <div class="flex ">
+                            <label for="client{{ c.id }}" class="flex">{% include 'components/user.html' %}{{ c.complete_name }}</label>    
+                            <input class="ml-2" id="client{{ c.id }}" type="radio" name="client_id" value="{{ c.id }}" required onchange="document.getElementById('client_error').remove()">
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="w-full">
+                        Aucun client trouvé, 
+                    </div>
+                {% endif %}
+            </div>
+        
+    {% else %}
+        <div class="flex">
+            <span > <span class=" rounded-lg undeline">"{{ search_input}}" </span> n'est pas enregistré</span>
             <form action="{% url 'TrackShop:new_client' %}" method="POST">
                 {% csrf_token %}
-                <input type="hidden" id="name" value="{{ search_input }}" name="client_name"><br>
+                <input type="hidden" id="name" value="{{ search_input }}" name="client_name">
                 <input type="hidden" value="sale" name="from">
-                <button type="submit">Ajouter {{ search_input }}</button>
+                <button type="submit" class="text-green-600 ml-5">Ajouter</button>
             </form>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
+</div>
+
 {% endif %}
+
+
+
+
+
+
 

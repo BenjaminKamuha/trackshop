@@ -101,6 +101,8 @@ def dashboard(request):
 	todaySales = Sale.objects.filter(shop=request.active_shop, created_at=today
 		).aggregate(total=Sum('total_amount'))['total'] or 0
 
+	print(todaySales)
+
 	# Graphic1
 	last_7_days = [now - timedelta(days=i) for i in range(6, -1, -1)]
 
@@ -113,6 +115,8 @@ def dashboard(request):
 		total = Sale.objects.filter(shop=request.active_shop, created_at__date=day
 		).aggregate(total=Sum('total_amount_base'))['total'] or 0
 
+		total = float(total)
+		
 		revenue_data.append(total)
 
 	# Graphic2
@@ -173,6 +177,8 @@ def dashboard(request):
 	sale_credit_percent = 0	
 	if total_sales > 0:
 		sale_credit_percent = round((sale_credit / total_sales) * 100, 2 )
+	
+
 	
 	
 	#revenue_labels = ["01 Jan", "02 Jan", "03 Jan", "04 Jan"]
@@ -244,6 +250,10 @@ def new_client(request):
 
 			if source == "dashboard":
 				return redirect("TrackShop:dashboard")
+
+			elif source == "sale":
+				return redirect("TrackShop:sale")
+			
 			else:
 				return redirect("TrackShop:client")
 		else:
@@ -502,7 +512,11 @@ def cash_book(request):
 			"currency": currency,
 			"date": date,
 		})
-	return render(request, "trackshop/cashbook.html", {})
+
+	date = now.date()
+	return render(request, "trackshop/cashbook.html", {
+		"today": date
+	})
 
 @login_required
 def cash_book_pdf(request, currency_code, date):
@@ -881,8 +895,6 @@ def create_purchase(request):
 				quantity=qty,
 				reference=f"Achat fournisseur #{purchase.provider.name}"
 			).apply()
-			
-			
 			product.sale_price = sp
 			product.purchase_price = cost
 			product.save()
@@ -1014,6 +1026,8 @@ def sale_save(request):
 	
 	sale.save() # Enregistrement de la vente
 
+	print(f"****************Vente enregistré**********************************")
+
 	# Enregistrement livre de caisse
 	CashBook.objects.create(
 		shop=request.active_shop,
@@ -1067,10 +1081,13 @@ def save_return(request, item_pk):
 def search_client(request):
 	request_from = request.GET.get('from')
 	search_input = request.GET.get('client_search', '')
+	
 	clients = Client.objects.filter(shop=request.active_shop, complete_name__icontains=search_input)[:10]
 	from_client = False
 	if request_from == "from_client":
 		from_client = True
+
+	
 
 
 	return render(request, 'trackshop/partials/sale/client_result.html', {

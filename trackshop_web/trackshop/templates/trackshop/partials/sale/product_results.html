@@ -6,15 +6,14 @@
         <div class="flex md:flex-col  gap-2 mt-2">
             {% for p in products %}
                 <div class="bg-white dark:bg-gray-800 rounded-sm p-2 w-full flex gap-2 box"                        
-                        hx-post="{% url 'TrackShop:select-product' p.pk %}"
-                        hx-target="#purchase-items"
-                        hx-post="{% url 'TrackShop:select-product' p.pk %}"
-                hx-target="#sale-items"
-                hx-trigger="click"
-                hx-swap="beforeend"
-                hx-on:click="const row=this.closest('div') ;row.querySelector('[name=&quot;prod_selected[]&quot;]').value={{ p.pk }}; document.getElementById('prod{{ p.pk }}').remove();"
-                onclick="document.getElementById('validate-sale-btn').classList.remove('hidden'); document.getElementById('help_text').classList.add('hidden')">
-                <input type="hidden" name="prod_selected[]" value="{{ product.pk }}
+                    hx-post="{% url 'TrackShop:select-product' p.pk %}"
+                    
+                    hx-target="#sale-items"
+                    hx-trigger="click"
+                    hx-swap="beforeend"
+                    hx-on:click="const row=this.closest('div') ;row.querySelector('[name=&quot;prod_selected[]&quot;]').value={{ p.pk }}; document.getElementById('prod{{ p.pk }}').remove();"
+                    onclick="document.getElementById('validate-sale-btn').classList.remove('hidden'); document.getElementById('help_text').classList.add('hidden')">
+                    <input type="hidden" name="prod_selected[]" value="{{ product.pk }}
                     ">
                     <img src="{% static 'img/product.png' %}" width="30" class="" alt="img">{{ p.name }}
                     <input type="hidden" name="prod_selected[]" value="{{ product.pk }}">
