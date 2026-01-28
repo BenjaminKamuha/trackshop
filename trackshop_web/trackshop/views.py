@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, F, DecimalField
+from django.db.models import Sum, F, DecimalField, ExpressionWrapper
 from .forms import StockForm, ProductForm, ClientForm, SwitchShopForm
 from django.template.loader import render_to_string
 from weasyprint import HTML
@@ -91,17 +91,16 @@ def calculate_progress(current, total):
 def dashboard(request):
 	# nombre de stock
 	active_shop = request.active_shop
-	today = timezone.now().date()
+	today_date = timezone.now().date()
 	stocks = Stock.objects.filter(shop=request.active_shop)
 	products = Product.objects.filter(shop=request.active_shop)
 	clients = Client.objects.filter(shop=request.active_shop)
 	
 	providers = Provider.objects.filter(shop=request.active_shop)
 
-	todaySales = Sale.objects.filter(shop=request.active_shop, created_at=today
+	todaySales = Sale.objects.filter(shop=request.active_shop, created_at__date=today_date
 		).aggregate(total=Sum('total_amount'))['total'] or 0
 
-	print(todaySales)
 
 	# Graphic1
 	last_7_days = [now - timedelta(days=i) for i in range(6, -1, -1)]
@@ -165,14 +164,17 @@ def dashboard(request):
 	total_purchases = Purchase.objects.filter(shop=request.active_shop
 		).aggregate(total=Sum('total_amount_base'))['total'] or 0
 
+	
+
 	purchase_credit = Purchase.objects.filter(shop=request.active_shop, is_credit=True
-		).aggregate(total=Sum('total_amount_base'))['total'] or 0
+		).aggregate(total=Sum(ExpressionWrapper(F('total_amount_base') - F('paid_amount_base'), output_field=DecimalField(max_digits=12, decimal_places=2))))['total'] or 0
+
 
 	last_sales = Sale.objects.filter(shop=request.active_shop).order_by("-created_at")[:10]
 
 	purchase_credit_percent = 0
 	if total_purchases > 0:
-		purchase_credit_percent = round((sale_credit /  total_purchases) * 100, 2)
+		purchase_credit_percent = round((purchase_credit /  total_purchases) * 100, 2)
 	
 	sale_credit_percent = 0	
 	if total_sales > 0:

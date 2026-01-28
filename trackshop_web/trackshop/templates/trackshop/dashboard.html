@@ -18,7 +18,7 @@
 
         {% include "components/kpi_card.html" with title="Ventes aujourd'hui ($)" value=todaySales %}
 
-        {% include "components/kpi_card.html" with title="Crédits ($)" value=sale_credit %}
+        {% include "components/kpi_card.html" with title="Crédits($)" value=sale_credit %}
 
         {% include "components/kpi_card.html" with title="Client" value=clients.count %}
 
@@ -37,7 +37,7 @@
 
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full">
             <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                Status stock
+                Rupture stock
             </p>
 
             <div class="flex justify-center mt-10">
@@ -67,7 +67,7 @@
             <thead class="bg-gray-200 dark:bg-gray-700">
                 <tr>
                     <th class="px-4 py-2 text-left text-sm">Client</th>
-                    <th class="px-4 py-2 text-left text-sm">Produit</th>
+                    <th class="px-4 py-2 text-left text-sm">Nombre Produit</th>
                     <th class="px-4 py-2 text-left text-sm">Montant</th>
                     <th class="px-4 py-2 text-left text-sm">Date</th>
                 </tr>
@@ -76,9 +76,9 @@
                 {% for sale in last_sales %}
                 <tr class="border-b border-gray-200 dark:border-gray-700">
                     <td class="px-4 py-2 text-sm">{{ sale.client }}</td>
-                    <td class="px-4 py-2 text-sm">{{ sale.product }}</td>
-                    <td class="px-4 py-2 text-sm">{{ sale.amount }}$</td>
-                    <td class="px-4 py-2 text-sm">{{ sale.date }}</td>
+                    <td class="px-4 py-2 text-sm">{{ sale.items.count }}</td>
+                    <td class="px-4 py-2 text-sm">{{ sale.paid_amount }}$</td>
+                    <td class="px-4 py-2 text-sm">{{ sale.created_at }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
